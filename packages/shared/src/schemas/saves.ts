@@ -26,8 +26,13 @@ export const createSaveRequestSchema = z.object({
     .max(64)
     .regex(/^[\w-]+$/, 'Seed may only contain letters, numbers, - and _')
     .optional(),
+  /** Data pack: "fictional" (generated from the seed) or an installed pack such as "real". */
+  dataPack: z
+    .string()
+    .regex(/^[a-z0-9-]{1,32}$/, 'Unknown data pack')
+    .default('fictional'),
 });
-export type CreateSaveRequest = z.infer<typeof createSaveRequestSchema>;
+export type CreateSaveRequest = z.input<typeof createSaveRequestSchema>;
 
 export const updateSaveRequestSchema = z.object({ name: saveNameSchema });
 export type UpdateSaveRequest = z.infer<typeof updateSaveRequestSchema>;
@@ -44,6 +49,10 @@ export const saveGameDtoSchema = z.object({
   managerClubId: z.number().int().nullable(),
   /** False until the save's world has been generated. */
   hasWorld: z.boolean(),
+  /** "fictional" or an imported data pack id. */
+  dataPack: z.string(),
+  /** Version of the imported pack this save was created from (null for fictional). */
+  packVersion: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
   lastPlayedAt: z.string(),

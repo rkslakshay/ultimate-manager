@@ -1,5 +1,6 @@
 import { clubUpdateSchema, type ClubSummaryDto } from '@um/shared';
 import { toast } from 'sonner';
+import { z } from 'zod';
 import { ClubBadge } from '@/components/game/ClubBadge';
 import { Button } from '@/components/ui/button';
 import { DialogClose, DialogContent, DialogFooter } from '@/components/ui/dialog';
@@ -8,7 +9,8 @@ import { FormAlert } from '../auth/FormAlert';
 import { useZodForm } from '../auth/useZodForm';
 import { useUpdateClub } from '../world/api';
 
-const formSchema = clubUpdateSchema.required();
+/** City may be unknown for real clubs: a blank city leaves it unset. */
+const formSchema = clubUpdateSchema.required().extend({ city: z.string().trim().max(40) });
 
 export function ClubEditDialog({
   saveId,
@@ -24,7 +26,7 @@ export function ClubEditDialog({
     name: club.name,
     shortName: club.shortName,
     code: club.code,
-    city: club.city,
+    city: club.city ?? '',
     primaryColor: club.primaryColor,
     secondaryColor: club.secondaryColor,
   });
@@ -64,7 +66,8 @@ export function ClubEditDialog({
         noValidate
         className="flex flex-col gap-3"
         onSubmit={handleSubmit(async (data) => {
-          await update.mutateAsync({ id: club.id, ...data });
+          const { city, ...rest } = data;
+          await update.mutateAsync({ id: club.id, ...rest, ...(city ? { city } : {}) });
           toast.success('Club updated');
           onDone();
         })}

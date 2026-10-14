@@ -3,6 +3,8 @@ import type {
   ClubRefDto,
   ClubSummaryDto,
   CompetitionDto,
+  OriginDto,
+  PlayerSourceDto,
   NationDto,
   PlayerDetailDto,
   PlayerSummaryDto,
@@ -46,6 +48,8 @@ export const toClubRef = (c: Club): ClubRefDto => ({
   code: c.code,
   primaryColor: c.primaryColor,
   secondaryColor: c.secondaryColor,
+  crestKey: c.crestKey,
+  origin: c.origin as OriginDto,
 });
 
 export interface SquadStats {
@@ -98,6 +102,20 @@ export function toPlayerSummary(p: Player, ctx: PlayerContext): PlayerSummaryDto
     wage: p.wage,
     contractEnd: p.contractEnd ? isoDate(p.contractEnd) : null,
     squadStatus: p.squadStatus,
+    origin: p.origin as OriginDto,
+    shirtNumber: p.shirtNumber,
+  };
+}
+
+function toPlayerSource(source: unknown): PlayerSourceDto | null {
+  if (!source || typeof source !== 'object') return null;
+  const s = source as PlayerSourceDto;
+  return {
+    key: s.key,
+    overall: s.overall ?? null,
+    potential: s.potential ?? null,
+    attributeOrigin: s.attributeOrigin ?? '',
+    fields: s.fields ?? {},
   };
 }
 
@@ -120,5 +138,6 @@ export function toPlayerDetail(
     releaseClause: p.releaseClause,
     nation: toNationDto(nation),
     ...(includeHidden ? { hidden: p.hidden } : {}),
+    source: toPlayerSource(p.source),
   };
 }

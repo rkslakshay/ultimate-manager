@@ -1,10 +1,14 @@
 import type {
   Club,
+  ClubField,
   Competition,
+  EntityOrigin,
+  EntitySource,
   Foot,
   Nation,
   NameFlavour,
   Player,
+  PlayerSource,
   SquadStatus,
   Stadium,
   TraitId,
@@ -52,16 +56,30 @@ export function playerToRow(saveId: string, p: Player): Prisma.PlayerCreateManyI
     releaseClause: p.contract?.releaseClause ?? null,
     value: p.value,
     retired: p.retired,
+    origin: p.origin,
+    shirtNumber: p.shirtNumber,
+    source: (p.source ?? undefined) as Prisma.InputJsonValue | undefined,
   };
 }
 
 export function clubToRow(saveId: string, c: Club): Prisma.ClubCreateManyInput {
-  return { saveId, ...c };
+  const { source, ...rest } = c;
+  return { saveId, ...rest, source: (source ?? undefined) as Prisma.InputJsonValue | undefined };
+}
+
+export function nationToRow(saveId: string, n: Nation): Prisma.NationCreateManyInput {
+  const { namePool, ...rest } = n;
+  return {
+    saveId,
+    ...rest,
+    firstNames: namePool?.firstNames ?? [],
+    lastNames: namePool?.lastNames ?? [],
+  };
 }
 
 /** Insert a freshly generated world for a save (inside the caller's transaction). */
 export async function insertWorld(tx: Tx, saveId: string, world: WorldState): Promise<void> {
-  await tx.nation.createMany({ data: world.nations.map((n) => ({ saveId, ...n })) });
+  await tx.nation.createMany({ data: world.nations.map((n) => nationToRow(saveId, n)) });
   await tx.competition.createMany({ data: world.competitions.map((c) => ({ saveId, ...c })) });
   await tx.stadium.createMany({ data: world.stadiums.map((s) => ({ saveId, ...s })) });
   await tx.club.createMany({ data: world.clubs.map((c) => clubToRow(saveId, c)) });
@@ -94,6 +112,9 @@ const PLAYER_COLUMNS: [string, string][] = [
   ['releaseClause', 'float8'],
   ['value', 'float8'],
   ['retired', 'boolean'],
+  ['origin', 'text'],
+  ['shirtNumber', 'int'],
+  ['source', 'jsonb'],
 ];
 const quoted = PLAYER_COLUMNS.map(([c]) => `"${c}"`).join(', ');
 const recordType = PLAYER_COLUMNS.map(([c, t]) => `"${c}" ${t}`).join(', ');
@@ -118,6 +139,7 @@ export async function bulkInsertPlayers(
         birthDate: isoDate(row.birthDate as Date),
         contractStart: row.contractStart ? isoDate(row.contractStart as Date) : null,
         contractEnd: row.contractEnd ? isoDate(row.contractEnd as Date) : null,
+        source: p.source ?? null,
       };
     });
     await tx.$executeRawUnsafe(PLAYER_INSERT_SQL, saveId, JSON.stringify(rows));
@@ -157,19 +179,28 @@ export function rowToPlayer(r: PlayerRow): Player {
         : null,
     value: r.value,
     retired: r.retired,
+    origin: r.origin as EntityOrigin,
+    shirtNumber: r.shirtNumber,
+    source: (r.source as PlayerSource | null) ?? null,
   };
 }
 
-const rowToNation = ({ saveId: _s, ...n }: NationRow): Nation => ({
+const rowToNation = ({ saveId: _s, firstNames, lastNames, ...n }: NationRow): Nation => ({
   ...n,
   flavour: n.flavour as NameFlavour,
+  namePool: firstNames.length && lastNames.length ? { firstNames, lastNames } : null,
 });
 const rowToCompetition = ({ saveId: _s, ...c }: CompetitionRow): Competition => ({
   ...c,
   kind: c.kind as Competition['kind'],
+  origin: c.origin as Competition['origin'],
 });
 const rowToStadium = ({ saveId: _s, ...s }: StadiumRow): Stadium => s;
-const rowToClub = ({ saveId: _s, ...c }: ClubRow): Club => c;
+const rowToClub = ({ saveId: _s, ...c }: ClubRow): Club => ({
+  ...c,
+  origin: c.origin as EntityOrigin,
+  source: (c.source as EntitySource<ClubField> | null) ?? null,
+});
 
 /** Load a save's complete world into engine form. */
 export async function loadWorld(

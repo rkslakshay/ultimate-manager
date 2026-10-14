@@ -52,6 +52,12 @@ model SaveGame {
   managerClubId Int?
   /// WorldState schema version of the generated world (null = no world generated yet).
   worldVersion  Int?
+  /// Data pack the world came from: "fictional" (generated) or an imported pack id ("real", "sample").
+  dataPack      String   @default("fictional")
+  /// Version of the imported pack (null for fictional worlds).
+  packVersion   String?
+  /// Market value model fitted to the pack's real values (null = engine default model).
+  valueModel    Json?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   lastPlayedAt  DateTime @default(now())
@@ -82,6 +88,9 @@ model Nation {
   flavour    String
   reputation Int
   playable   Boolean
+  /// Name pool for regens (empty arrays = use the flavour).
+  firstNames String[] @default([])
+  lastNames  String[] @default([])
 
   @@id([saveId, id])
 }
@@ -100,6 +109,8 @@ model Competition {
   clubIds          Int[]
   promotionPlaces  Int
   relegationPlaces Int
+  /// generated | imported | simulated
+  origin           String   @default("generated")
 
   @@id([saveId, id])
 }
@@ -109,7 +120,7 @@ model Stadium {
   id       Int
   save     SaveGame @relation(fields: [saveId], references: [id], onDelete: Cascade)
   name     String
-  city     String
+  city     String?
   capacity Int
 
   @@id([saveId, id])
@@ -123,8 +134,8 @@ model Club {
   shortName          String
   code               String
   nationId           Int
-  city               String
-  founded            Int
+  city               String?
+  founded            Int?
   primaryColor       String
   secondaryColor     String
   reputation         Int
@@ -136,6 +147,11 @@ model Club {
   wageBudget         Float
   trainingFacilities Int
   youthFacilities    Int
+  /// generated | imported | custom
+  origin             String   @default("generated")
+  crestKey           String?
+  /// Source key and per-field provenance for imported clubs.
+  source             Json?
 
   @@id([saveId, id])
   @@index([saveId, leagueId])
@@ -173,6 +189,11 @@ model Player {
   releaseClause   Float?
   value           Float
   retired         Boolean   @default(false)
+  /// generated | imported | custom
+  origin          String    @default("generated")
+  shirtNumber     Int?
+  /// Source key, source ratings and per-field/per-attribute provenance for imported players.
+  source          Json?
 
   @@id([saveId, id])
   @@index([saveId, clubId])
@@ -180,4 +201,57 @@ model Player {
   @@index([saveId, value])
   @@index([saveId, primaryPosition])
   @@index([saveId, lastName])
+}
+
+// ---------------------------------------------------------------------------
+// Real-world history shipped with imported data packs. Immutable per pack version and shared by
+// every save created from that version (saves never modify it). In-game transfers will live in
+// a separate per-save table, so historical and simulated data never mix.
+// ---------------------------------------------------------------------------
+
+model DataPackVersion {
+  pack        String
+  version     String
+  label       String
+  startDate   DateTime @db.Date
+  summary     Json
+  installedAt DateTime @default(now())
+
+  @@id([pack, version])
+}
+
+model HistoricalTransfer {
+  id             Int      @id @default(autoincrement())
+  pack           String
+  version        String
+  /// Canonical player id within the pack (= Player.id in saves created from it).
+  playerId       Int
+  date           DateTime @db.Date
+  season         String?
+  fromClubId     Int?
+  toClubId       Int?
+  fromClubName   String?
+  toClubName     String?
+  /// null = fee not reported (never stored as 0).
+  feeEur         Float?
+  /// paid | zero_reported | unknown
+  feeStatus      String
+  marketValueEur Float?
+  /// Source transfer type when stated (e.g. loan).
+  type           String?
+  source         String
+
+  @@index([pack, version, playerId])
+}
+
+model HistoricalValuation {
+  id       Int      @id @default(autoincrement())
+  pack     String
+  version  String
+  playerId Int
+  date     DateTime @db.Date
+  valueEur Float
+  source   String
+
+  @@index([pack, version, playerId])
 }

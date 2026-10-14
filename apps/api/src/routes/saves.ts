@@ -29,6 +29,8 @@ export function toSaveDto(save: SaveGame): SaveGameDto {
     clubName: save.clubName,
     managerClubId: save.managerClubId,
     hasWorld: save.worldVersion !== null,
+    dataPack: save.dataPack,
+    packVersion: save.packVersion,
     createdAt: save.createdAt.toISOString(),
     updatedAt: save.updatedAt.toISOString(),
     lastPlayedAt: save.lastPlayedAt.toISOString(),

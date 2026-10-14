@@ -156,6 +156,8 @@ export async function worldRoutes(app: FastifyInstance, { db }: { db: Db }) {
     const response: ClubDetailDto = {
       ...toClubSummary(club, squadStats(squad.map((p) => p.ca))),
       founded: club.founded,
+      sourceFields:
+        (club.source as { fields?: ClubDetailDto['sourceFields'] } | null)?.fields ?? null,
       trainingFacilities: club.trainingFacilities,
       youthFacilities: club.youthFacilities,
       wageBill: squad.reduce((sum, p) => sum + (p.wage ?? 0), 0),
