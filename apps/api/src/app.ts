@@ -8,6 +8,8 @@ import authPlugin from './plugins/auth';
 import { authRoutes } from './routes/auth';
 import { healthRoutes } from './routes/health';
 import { saveRoutes } from './routes/saves';
+import { editorRoutes } from './world/editor-routes';
+import { worldRoutes } from './world/routes';
 
 export interface BuildAppOptions {
   config: AppConfig;
@@ -46,6 +48,8 @@ export async function buildApp({ config, db }: BuildAppOptions): Promise<Fastify
       await api.register(healthRoutes, { prefix: '/health', db });
       await api.register(authRoutes, { prefix: '/auth', config, db });
       await api.register(saveRoutes, { prefix: '/saves', db });
+      await api.register(worldRoutes, { prefix: '/saves/:saveId/world', db });
+      await api.register(editorRoutes, { prefix: '/saves/:saveId/world', db });
     },
     { prefix: '/api' },
   );

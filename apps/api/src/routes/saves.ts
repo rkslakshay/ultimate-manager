@@ -10,14 +10,14 @@ import { randomBytes } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import type { Db } from '../db';
-import type { SaveGame } from '../generated/prisma/client';
+import type { Prisma, SaveGame } from '../generated/prisma/client';
 import { AppError, notFound, parseInput } from '../lib/errors';
 import { insertWorld } from '../world/world-repo';
 
 /** Every new career starts at the beginning of the 2026/27 pre-season. */
 export const CAREER_START_DATE = DEFAULT_START_DATE;
 
-const idParamsSchema = z.object({ id: z.string().min(1).max(64) });
+const idParamsSchema = z.object({ saveId: z.string().min(1).max(64) });
 
 export function toSaveDto(save: SaveGame): SaveGameDto {
   return {
@@ -35,11 +35,26 @@ export function toSaveDto(save: SaveGame): SaveGameDto {
   };
 }
 
+/** Generate the save's world from its seed, store it and mark the save as having one. */
+async function createWorld(
+  tx: Prisma.TransactionClient,
+  saveId: string,
+  seed: string,
+): Promise<SaveGame> {
+  // Pure CPU (~60 ms) followed by bulk inserts (~250 ms).
+  const world = generateWorld(seed, { startDate: CAREER_START_DATE });
+  await insertWorld(tx, saveId, world);
+  return tx.saveGame.update({
+    where: { id: saveId },
+    data: { worldVersion: WORLD_SCHEMA_VERSION },
+  });
+}
+
 export async function saveRoutes(app: FastifyInstance, { db }: { db: Db }) {
   /** Load a save owned by the current user, or 404 (never reveal other users' saves). */
   async function findOwnedSave(userId: string, rawParams: unknown): Promise<SaveGame> {
-    const { id } = parseInput(idParamsSchema, rawParams);
-    const save = await db.saveGame.findFirst({ where: { id, userId } });
+    const { saveId } = parseInput(idParamsSchema, rawParams);
+    const save = await db.saveGame.findFirst({ where: { id: saveId, userId } });
     if (!save) throw notFound('Save game');
     return save;
   }
@@ -64,8 +79,6 @@ export async function saveRoutes(app: FastifyInstance, { db }: { db: Db }) {
       );
     }
     const seed = input.seed ?? randomBytes(8).toString('hex');
-    // Generating is pure CPU (~60 ms); do it before opening the transaction.
-    const world = generateWorld(seed, { startDate: CAREER_START_DATE });
     const save = await db.$transaction(
       async (tx) => {
         const created = await tx.saveGame.create({
@@ -75,24 +88,22 @@ export async function saveRoutes(app: FastifyInstance, { db }: { db: Db }) {
             managerName: input.managerName,
             seed,
             gameDate: new Date(`${CAREER_START_DATE}T00:00:00Z`),
-            worldVersion: WORLD_SCHEMA_VERSION,
           },
         });
-        await insertWorld(tx, created.id, world);
-        return created;
+        return createWorld(tx, created.id, seed);
       },
       { timeout: 60_000, maxWait: 10_000 },
     );
     return reply.status(201).send(toSaveDto(save));
   });
 
-  app.get('/:id', async (request) => {
+  app.get('/:saveId', async (request) => {
     const { userId } = await app.authenticate(request);
     return toSaveDto(await findOwnedSave(userId, request.params));
   });
 
   /** Mark a save as loaded (bumps lastPlayedAt so it sorts first). */
-  app.post('/:id/load', async (request) => {
+  app.post('/:saveId/load', async (request) => {
     const { userId } = await app.authenticate(request);
     const save = await findOwnedSave(userId, request.params);
     const updated = await db.saveGame.update({
@@ -102,8 +113,20 @@ export async function saveRoutes(app: FastifyInstance, { db }: { db: Db }) {
     return toSaveDto(updated);
   });
 
+  /** Generate the world for a save created before worlds existed (no-op otherwise). */
+  app.post('/:saveId/world', async (request) => {
+    const { userId } = await app.authenticate(request);
+    const save = await findOwnedSave(userId, request.params);
+    if (save.worldVersion !== null) return toSaveDto(save);
+    const updated = await db.$transaction((tx) => createWorld(tx, save.id, save.seed), {
+      timeout: 60_000,
+      maxWait: 10_000,
+    });
+    return toSaveDto(updated);
+  });
+
   /** Take charge of a club. Allowed once, while the manager is unemployed. */
-  app.post('/:id/club', async (request) => {
+  app.post('/:saveId/club', async (request) => {
     const { userId } = await app.authenticate(request);
     const save = await findOwnedSave(userId, request.params);
     const { clubId } = parseInput(chooseClubRequestSchema, request.body);
@@ -121,7 +144,7 @@ export async function saveRoutes(app: FastifyInstance, { db }: { db: Db }) {
     return toSaveDto(updated);
   });
 
-  app.patch('/:id', async (request) => {
+  app.patch('/:saveId', async (request) => {
     const { userId } = await app.authenticate(request);
     const save = await findOwnedSave(userId, request.params);
     const input = parseInput(updateSaveRequestSchema, request.body);
@@ -132,7 +155,7 @@ export async function saveRoutes(app: FastifyInstance, { db }: { db: Db }) {
     return toSaveDto(updated);
   });
 
-  app.delete('/:id', async (request, reply) => {
+  app.delete('/:saveId', async (request, reply) => {
     const { userId } = await app.authenticate(request);
     const save = await findOwnedSave(userId, request.params);
     await db.saveGame.delete({ where: { id: save.id } });
