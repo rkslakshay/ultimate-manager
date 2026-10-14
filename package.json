@@ -26,7 +26,9 @@
     "db:migrate:dev": "npm run db:migrate:dev --workspace @um/api",
     "db:reset": "npm run db:reset --workspace @um/api",
     "prepare": "husky",
-    "db:generate": "npm run db:generate --workspace @um/api"
+    "db:generate": "npm run db:generate --workspace @um/api",
+    "data:inspect": "tsx packages/data-import/src/cli.ts inspect",
+    "data:import": "tsx packages/data-import/src/cli.ts import"
   },
   "lint-staged": {
     "*.{ts,tsx,js,mjs,cjs}": [

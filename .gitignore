@@ -14,3 +14,13 @@ playwright/.cache/
 .vite/
 *.tsbuildinfo
 .DS_Store
+
+# Data packs: raw datasets, processed packs, reports and user images may be licensed
+# and must never be committed. Only the README, config examples and fictional fixtures are.
+data-packs/raw/
+data-packs/staging/
+data-packs/processed/
+data-packs/reports/
+data-packs/assets/
+data-packs/config/*.json
+!data-packs/config/*.example.json

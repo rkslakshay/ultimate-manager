@@ -1,0 +1,18 @@
+club_id,name,domestic_competition_id,stadium_name,stadium_seats,squad_size
+107001,Caldbury Town,NP1,Caldbury Ground,16000,14
+107002,Brentfield Town,NP1,Brentfield Ground,25000,14
+107003,Radbury United,NP1,Radbury Ground,24000,14
+107004,Harton Athletic,NP1,Harton Ground,4000,14
+107005,Ashfield Town,NP1,Ashfield Ground,24000,14
+107006,Marwick Town FC,NP1,Marwick Ground,5000,14
+107007,Ashbury Athletic FC,NP1,Ashbury Ground,20000,14
+107008,Cranbury United,NP1,Cranbury Ground,8000,14
+107009,Halham Athletic FC,NC2,Halham Ground,7000,14
+107010,Cranwick Athletic,NC2,Cranwick Ground,31000,14
+107011,Radton City,NC2,Radton Ground,9000,14
+107012,Kingsfield United FC,NC2,Kingsfield Ground,12000,14
+107013,Kingsbury Town FC,NC2,Kingsbury Ground,40000,14
+107014,Northbury Rovers FC,NC2,Northbury Ground,36000,14
+107015,Halstead United,NC2,Halstead Ground,11000,14
+107016,Radwick Athletic,NC2,Radwick Ground,19000,14
+106999,Old Harbour FC,XX9,,,

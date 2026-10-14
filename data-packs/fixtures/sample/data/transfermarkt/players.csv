@@ -1,0 +1,226 @@
+player_id,first_name,last_name,name,last_season,current_club_id,country_of_citizenship,date_of_birth,position,sub_position,foot,height_in_cm,contract_expiration_date,market_value_in_eur,current_club_name,current_club_domestic_competition_id
+800001,Lewis,Kendrick,Lewis Kendrick,2026,107001,Northland,2003-11-19 00:00:00,Goalkeeper,,,,2030-06-30 00:00:00,404930,Caldbury Town,NP1
+800002,Jamie,Whitridge,Jamie Whitridge,2026,107001,Northland,2002-04-15 00:00:00,Goalkeeper,,,,2028-06-30 00:00:00,126380,Caldbury Town,NP1
+800003,Harvey,Dunfield,Harvey Dunfield,2026,107001,Northland,2007-05-18 00:00:00,Defender,,,,2027-06-30 00:00:00,306720,Caldbury Town,NP1
+800004,Will,Cranmore,Will Cranmore,2026,107001,Northland,2003-03-03 00:00:00,Defender,,,,2030-06-30 00:00:00,614240,Caldbury Town,NP1
+800005,Sam,Duncombe,Sam Duncombe,2026,107001,Northland,1992-11-22 00:00:00,Defender,,,,2029-06-30 00:00:00,15760,Caldbury Town,NP1
+800006,Finn,Norcross,Finn Norcross,2026,107001,Northland,1999-04-03 00:00:00,Defender,,,,2027-06-30 00:00:00,95730,Caldbury Town,NP1
+800007,Kieran,Cartridge,Kieran Cartridge,2026,107001,Northland,1992-05-23 00:00:00,Defender,,,,,110130,Caldbury Town,NP1
+800008,Ben,Whitford,Ben Whitford,2026,107001,Northland,1999-03-03 00:00:00,Midfield,,,,2028-06-30 00:00:00,220260,Caldbury Town,NP1
+800009,Scott,Marsford,Scott Marsford,2026,107001,Northland,2001-10-17 00:00:00,Midfield,,,,2028-06-30 00:00:00,506820,Caldbury Town,NP1
+800010,Finn,Wakewell,Finn Wakewell,2026,107001,Northland,2003-11-08 00:00:00,Midfield,,,,2027-06-30 00:00:00,266950,Caldbury Town,NP1
+800011,Matt,Thornwood,Matt Thornwood,2026,107001,Southmoor,2002-09-04 00:00:00,Attack,,,,2029-06-30 00:00:00,202200,Caldbury Town,NP1
+800012,Gabriel,Navondo,Gabriel Navondo,2026,107001,Southmoor,1998-11-10 00:00:00,Attack,,,,2027-06-30 00:00:00,166840,Caldbury Town,NP1
+800013,Dylan,Shelton,Dylan Shelton,2026,107001,Northland,1992-04-09 00:00:00,Midfield,,,,2025-06-30 00:00:00,54990,Caldbury Town,NP1
+800014,Will,Thornmore,Will Thornmore,2026,107001,Northland,1994-09-25 00:00:00,Attack,,,,2027-06-30 00:00:00,145400,Caldbury Town,NP1
+800015,Joe,Bradwell,Joe Bradwell,2026,107002,Northland,1993-03-02 00:00:00,Goalkeeper,,,,,47860,Brentfield Town,NP1
+800016,Sean,Stanmore,Sean Stanmore,2026,107002,Northland,1991-12-29 00:00:00,Goalkeeper,,,,2030-06-30 00:00:00,54990,Brentfield Town,NP1
+800017,Ethan,Blackmore,Ethan Blackmore,2026,107002,Northland,2001-07-10 00:00:00,Defender,,,,2029-06-30 00:00:00,166840,Brentfield Town,NP1
+800018,Josip,Hajduk,Josip Hajduk,2026,107002,Eastvale,1991-09-27 00:00:00,Defender,,,,2029-06-30 00:00:00,63190,Brentfield Town,NP1
+800019,Tom,Whitwood,Tom Whitwood,2026,107002,Northland,1993-03-24 00:00:00,Defender,,,,2028-06-30 00:00:00,47860,Brentfield Town,NP1
+800020,Max,Wakeshaw,Max Wakeshaw,2026,107002,Northland,2003-12-26 00:00:00,Defender,,,,2029-06-30 00:00:00,465270,Brentfield Town,NP1
+800021,Owen,Wakeley,Owen Wakeley,2026,107002,Northland,1995-06-20 00:00:00,Defender,,,,2030-06-30 00:00:00,83420,Brentfield Town,NP1
+800022,Sam,Upton,Sam Upton,2026,107002,Northland,1998-12-09 00:00:00,Midfield,,,,2027-06-30 00:00:00,126380,Brentfield Town,NP1
+800023,Scott,Brookridge,Scott Brookridge,2026,107002,Northland,2008-03-05 00:00:00,Midfield,,,,2028-06-30 00:00:00,614240,Brentfield Town,NP1
+800024,Jack,Weycombe,Jack Weycombe,2026,107002,Northland,2005-11-09 00:00:00,Midfield,,,,,810920,Brentfield Town,NP1
+800025,Matt,Ellery,Matt Ellery,2026,107002,Northland,1996-08-10 00:00:00,Attack,,,,2027-06-30 00:00:00,191700,Brentfield Town,NP1
+800026,Adam,Blackworth,Adam Blackworth,2026,107002,Northland,2005-09-23 00:00:00,Attack,,,,2030-06-30 00:00:00,465270,Brentfield Town,NP1
+800027,Sam,Dalton,Sam Dalton,2026,107002,Northland,1995-04-28 00:00:00,Midfield,,,,,145400,Brentfield Town,NP1
+800028,Alex,Brookworth,Alex Brookworth,2026,107002,Northland,2002-04-10 00:00:00,Attack,,,,2029-06-30 00:00:00,126380,Brentfield Town,NP1
+800029,Oliver,Shelcombe,Oliver Shelcombe,2026,107003,Northland,2004-10-04 00:00:00,Goalkeeper,,,,2029-06-30 00:00:00,100970,Radbury United,NP1
+800030,James,Kentwell,James Kentwell,2026,107003,Northland,2001-02-13 00:00:00,Goalkeeper,,,,,290790,Radbury United,NP1
+800031,Ethan,Ruthford,Ethan Ruthford,2026,107003,Northland,2006-02-22 00:00:00,Defender,,,,2029-06-30 00:00:00,38190,Radbury United,NP1
+800032,Jack,Whitwood,Jack Whitwood,2026,107003,Northland,1996-10-15 00:00:00,Defender,,,,2027-06-30 00:00:00,883350,Radbury United,NP1
+800033,Harry,Norcross,Harry Norcross,2026,107003,Northland,1991-11-20 00:00:00,Defender,,,,2029-06-30 00:00:00,384400,Radbury United,NP1
+800034,Ben,Presridge,Ben Presridge,2026,107003,Northland,2000-02-09 00:00:00,Defender,,,,,253080,Radbury United,NP1
+800035,Jacob,Dalton,Jacob Dalton,2026,107003,Northland,2006-08-08 00:00:00,Defender,,,,2029-06-30 00:00:00,352420,Radbury United,NP1
+800036,James,Bramwell,James Bramwell,2026,107003,Northland,2004-01-07 00:00:00,Midfield,,,,2030-06-30 00:00:00,232330,Radbury United,NP1
+800037,Jamie,Hayford,Jamie Hayford,2026,107003,Northland,1992-09-01 00:00:00,Midfield,,,,2030-06-30 00:00:00,72600,Radbury United,NP1
+800038,Max,Shelridge,Max Shelridge,2026,107003,Northland,2007-10-11 00:00:00,Midfield,,,,2028-06-30 00:00:00,352420,Radbury United,NP1
+800039,Ethan,Millshaw,Ethan Millshaw,2026,107003,Northland,2000-04-10 00:00:00,Attack,,,,2027-06-30 00:00:00,290790,Radbury United,NP1
+800040,Harry,Weyshaw,Harry Weyshaw,2026,107003,Northland,2005-04-23 00:00:00,Attack,,,,2030-06-30 00:00:00,266950,Radbury United,NP1
+800041,Owen,Stanshawe,Owen Stanshawe,2026,107003,Northland,2002-07-03 00:00:00,Midfield,,,,2030-06-30 00:00:00,232330,Radbury United,NP1
+800042,Jamie,Dunshaw,Jamie Dunshaw,2026,107003,Northland,1995-11-02 00:00:00,Attack,,,,2029-06-30 00:00:00,441100,Radbury United,NP1
+800043,Will,Langridge,Will Langridge,2026,107004,Northland,2002-11-03 00:00:00,Goalkeeper,,,,2028-06-30 00:00:00,705760,Harton Athletic,NP1
+800044,Ben,Chapmore,Ben Chapmore,2026,107004,Northland,2003-10-18 00:00:00,Goalkeeper,,,,2027-06-30 00:00:00,534590,Harton Athletic,NP1
+800045,Max,Cranley,Max Cranley,2026,107004,Northland,2003-02-01 00:00:00,Defender,,,,,306720,Harton Athletic,NP1
+800046,Dylan,Shelridge,Dylan Shelridge,2026,107004,Northland,2003-08-12 00:00:00,Defender,,,,,306720,Harton Athletic,NP1
+800047,Sean,Langridge,Sean Langridge,2026,107004,Northland,2007-12-12 00:00:00,Defender,,,,2027-06-30 00:00:00,266950,Harton Athletic,NP1
+800048,Harvey,Northmore,Harvey Northmore,2026,107004,Northland,2007-08-12 00:00:00,Defender,,,,2027-06-30 00:00:00,232330,Harton Athletic,NP1
+800049,Kieran,Cranwood,Kieran Cranwood,2026,107004,Northland,1999-10-16 00:00:00,Defender,,,,2027-06-30 00:00:00,145210,Harton Athletic,NP1
+800050,Finn,Dunton,Finn Dunton,2026,107004,Northland,2005-02-22 00:00:00,Midfield,,,,,931740,Harton Athletic,NP1
+800051,Dan,Quayle,Dan Quayle,2026,107004,Northland,2006-09-08 00:00:00,Midfield,,,,,306720,Harton Athletic,NP1
+800052,Harry,Kendrick,Harry Kendrick,2026,107004,Northland,2006-10-09 00:00:00,Midfield,,,,2029-06-30 00:00:00,87880,Harton Athletic,NP1
+800053,Leo,Norcross,Leo Norcross,2026,107004,Northland,2006-02-28 00:00:00,Attack,,,,2029-06-30 00:00:00,931740,Harton Athletic,NP1
+800054,Leo,Jessop,Leo Jessop,2026,107004,Northland,1997-07-11 00:00:00,Attack,,,,2029-06-30 00:00:00,54920,Harton Athletic,NP1
+800055,Lorenzo,Torino,Lorenzo Torino,2026,107004,Southmoor,1991-09-04 00:00:00,Midfield,,,,2028-06-30 00:00:00,220550,Harton Athletic,NP1
+800056,Dan,Quayle,Dan Quayle,2026,107004,Northland,2002-03-26 00:00:00,Attack,,,,2027-06-30 00:00:00,191700,Harton Athletic,NP1
+800057,Callum,Blackford,Callum Blackford,2026,107005,Northland,2005-10-09 00:00:00,Goalkeeper,,,,2028-06-30 00:00:00,202200,Ashfield Town,NP1
+800058,Kieran,Cranwell,Kieran Cranwell,2026,107005,Northland,2001-11-05 00:00:00,Goalkeeper,,,,,166840,Ashfield Town,NP1
+800059,Owen,Chapworth,Owen Chapworth,2026,107005,Northland,2007-07-28 00:00:00,Defender,,,,2027-06-30 00:00:00,202200,Ashfield Town,NP1
+800060,Tyler,Dunfield,Tyler Dunfield,2026,107005,Northland,1993-08-25 00:00:00,Defender,,,,2028-06-30 00:00:00,54990,Ashfield Town,NP1
+800061,Kamil,Ostak,Kamil Ostak,2026,107005,Eastvale,1999-03-29 00:00:00,Defender,,,,2030-06-30 00:00:00,441100,Ashfield Town,NP1
+800062,Sam,Garmore,Sam Garmore,2026,107005,Northland,1997-08-26 00:00:00,Defender,,,,2029-06-30 00:00:00,441100,Ashfield Town,NP1
+800063,Sam,Chapworth,Sam Chapworth,2026,107005,Northland,1992-05-09 00:00:00,Defender,,,,2028-06-30 00:00:00,110130,Ashfield Town,NP1
+800064,Theo,Millfield,Theo Millfield,2026,107005,Northland,1993-05-23 00:00:00,Midfield,,,,2027-06-30 00:00:00,126540,Ashfield Town,NP1
+800065,Liam,Bramwell,Liam Bramwell,2026,107005,Northland,2004-12-25 00:00:00,Midfield,,,,,266950,Ashfield Town,NP1
+800066,Tyler,Lowther,Tyler Lowther,2026,107005,Northland,1995-10-28 00:00:00,Midfield,,,,2030-06-30 00:00:00,506820,Ashfield Town,NP1
+800067,Kieran,Whitby,Kieran Whitby,2026,107005,Northland,1992-10-01 00:00:00,Attack,,,,2028-06-30 00:00:00,167060,Ashfield Town,NP1
+800068,Luke,Presridge,Luke Presridge,2026,107005,Northland,1996-04-03 00:00:00,Attack,,,,2030-06-30 00:00:00,95730,Ashfield Town,NP1
+800069,Noah,Ingram,Noah Ingram,2026,107005,Northland,2005-09-07 00:00:00,Midfield,,,,2030-06-30 00:00:00,534590,Ashfield Town,NP1
+800070,Leo,Ruthley,Leo Ruthley,2026,107005,Northland,2005-06-16 00:00:00,Attack,,,,2027-06-30 00:00:00,705760,Ashfield Town,NP1
+800071,Connor,Brookley,Connor Brookley,2026,107006,Northland,2002-04-02 00:00:00,Goalkeeper,,,,2028-06-30 00:00:00,220260,Marwick Town,NP1
+800072,Owen,Blackshaw,Owen Blackshaw,2026,107006,Northland,1996-11-28 00:00:00,Goalkeeper,,,,2028-06-30 00:00:00,191700,Marwick Town,NP1
+800073,Sam,Preswell,Sam Preswell,2026,107006,Northland,2004-10-09 00:00:00,Defender,,,,2027-06-30 00:00:00,306720,Marwick Town,NP1
+800074,Lewis,Kentcombe,Lewis Kentcombe,2026,107006,Northland,2008-01-18 00:00:00,Defender,,,,2028-06-30 00:00:00,266950,Marwick Town,NP1
+800075,Scott,Wakeby,Scott Wakeby,2026,107006,Northland,2006-08-07 00:00:00,Defender,,,,2028-06-30 00:00:00,352420,Marwick Town,NP1
+800076,Damir,Kosek,Damir Kosek,2026,107006,Eastvale,1996-03-27 00:00:00,Defender,,,,2028-06-30 00:00:00,83310,Marwick Town,NP1
+800077,James,Dunby,James Dunby,2026,107006,Northland,1998-07-28 00:00:00,Defender,,,,2030-06-30 00:00:00,334120,Marwick Town,NP1
+800078,Dylan,Lowther,Dylan Lowther,2026,107006,Northland,1997-10-18 00:00:00,Midfield,,,,2028-06-30 00:00:00,383900,Marwick Town,NP1
+800079,Noah,Stanmore,Noah Stanmore,2026,107006,Northland,1992-03-28 00:00:00,Midfield,,,,2029-06-30 00:00:00,110130,Marwick Town,NP1
+800080,Ben,Bradcombe,Ben Bradcombe,2026,107006,Northland,1999-02-03 00:00:00,Midfield,,,,,253080,Marwick Town,NP1
+800081,Andrej,Sedlar,Andrej Sedlar,2026,107006,Eastvale,1996-05-04 00:00:00,Attack,,,,2030-06-30 00:00:00,334120,Marwick Town,NP1
+800082,Adam,Ellery,Adam Ellery,2026,107006,Northland,2003-05-10 00:00:00,Attack,,,,2030-06-30 00:00:00,232330,Marwick Town,NP1
+800083,Ignacio,Casarro,Ignacio Casarro,2026,107006,Southmoor,2008-03-12 00:00:00,Midfield,,,,2028-06-30 00:00:00,534590,Marwick Town,NP1
+800084,Jack,Dunshaw,Jack Dunshaw,2026,107006,Northland,1998-07-17 00:00:00,Attack,,,,2029-06-30 00:00:00,441100,Marwick Town,NP1
+800085,Dylan,Yardley,Dylan Yardley,2026,107007,Northland,1995-02-26 00:00:00,Goalkeeper,,,,2029-06-30 00:00:00,145400,Ashbury Athletic,NP1
+800086,Dan,Garside,Dan Garside,2026,107007,Northland,1993-10-14 00:00:00,Goalkeeper,,,,,63190,Ashbury Athletic,NP1
+800087,Dylan,Ruthfield,Dylan Ruthfield,2026,107007,Northland,1997-09-10 00:00:00,Defender,,,,2028-06-30 00:00:00,220260,Ashbury Athletic,NP1
+800088,Harry,Garside,Harry Garside,2026,107007,Northland,2007-01-01 00:00:00,Defender,,,,2030-06-30 00:00:00,100970,Ashbury Athletic,NP1
+800089,Oliver,Brookshaw,Oliver Brookshaw,2026,107007,Northland,1997-07-31 00:00:00,Defender,,,,2030-06-30 00:00:00,109990,Ashbury Athletic,NP1
+800090,Callum,Cartcombe,Callum Cartcombe,2026,107007,Northland,2000-12-02 00:00:00,Defender,,,,2029-06-30 00:00:00,83310,Ashbury Athletic,NP1
+800091,Tyler,Varley,Tyler Varley,2026,107007,Northland,1999-07-03 00:00:00,Defender,,,,,220260,Ashbury Athletic,NP1
+800092,Ben,Hartford,Ben Hartford,2026,107007,Northland,1998-01-15 00:00:00,Midfield,,,,2030-06-30 00:00:00,166840,Ashbury Athletic,NP1
+800093,Josip,Kosak,Josip Kosak,2026,107007,Eastvale,2004-04-10 00:00:00,Midfield,,,,2028-06-30 00:00:00,43880,Ashbury Athletic,NP1
+800094,Owen,Bramwell,Owen Bramwell,2026,107007,Northland,1995-01-10 00:00:00,Midfield,,,,2030-06-30 00:00:00,72600,Ashbury Athletic,NP1
+800095,Reece,Stancombe,Reece Stancombe,2026,107007,Northland,2006-04-16 00:00:00,Attack,,,,2027-06-30 00:00:00,133300,Ashbury Athletic,NP1
+800096,Ryan,Preswell,Ryan Preswell,2026,107007,Northland,2002-07-10 00:00:00,Attack,,,,2028-06-30 00:00:00,153160,Ashbury Athletic,NP1
+800097,Rhys,Thornwood,Rhys Thornwood,2026,107007,Northland,1992-10-15 00:00:00,Midfield,,,,2028-06-30 00:00:00,47860,Ashbury Athletic,NP1
+800098,Nathan,Ashwell,Nathan Ashwell,2026,107007,Northland,2002-03-17 00:00:00,Attack,,,,2029-06-30 00:00:00,253080,Ashbury Athletic,NP1
+800099,Zach,Carton,Zach Carton,2026,107008,Northland,1999-08-04 00:00:00,Goalkeeper,,,,2027-06-30 00:00:00,669100,Cranbury United,NP1
+800100,Oliver,Hartwell,Oliver Hartwell,2026,107008,Northland,2006-02-26 00:00:00,Goalkeeper,,,,,232330,Cranbury United,NP1
+800101,Dylan,Ruthcombe,Dylan Ruthcombe,2026,107008,Northland,2004-03-01 00:00:00,Defender,,,,2030-06-30 00:00:00,404930,Cranbury United,NP1
+800102,Callum,Ruthby,Callum Ruthby,2026,107008,Northland,2003-04-26 00:00:00,Defender,,,,,232330,Cranbury United,NP1
+800103,Jacob,Wakeshaw,Jacob Wakeshaw,2026,107008,Northland,1993-12-29 00:00:00,Defender,,,,2028-06-30 00:00:00,110130,Cranbury United,NP1
+800104,James,Northmore,James Northmore,2026,107008,Northland,1998-12-26 00:00:00,Defender,,,,2027-06-30 00:00:00,220260,Cranbury United,NP1
+800105,Rhys,Blackridge,Rhys Blackridge,2026,107008,Northland,2005-03-13 00:00:00,Defender,,,,2028-06-30 00:00:00,352420,Cranbury United,NP1
+800106,Esteban,Alero,Esteban Alero,2026,107008,Southmoor,1998-03-28 00:00:00,Midfield,,,,,253080,Cranbury United,NP1
+800107,Dragan,Kovek,Dragan Kovek,2026,107008,Eastvale,1995-02-20 00:00:00,Midfield,,,,2028-06-30 00:00:00,63190,Cranbury United,NP1
+800108,James,Shelfield,James Shelfield,2026,107008,Northland,1996-03-19 00:00:00,Midfield,,,,2030-06-30 00:00:00,220260,Cranbury United,NP1
+800109,James,Weyford,James Weyford,2026,107008,Northland,1995-03-16 00:00:00,Attack,,,,2030-06-30 00:00:00,126540,Cranbury United,NP1
+800110,Julián,Vilenda,Julián Vilenda,2026,107008,Southmoor,1993-07-28 00:00:00,Attack,,,,2027-06-30 00:00:00,36250,Cranbury United,NP1
+800111,Leo,Dalton,Leo Dalton,2026,107008,Northland,2003-03-14 00:00:00,Midfield,,,,2028-06-30 00:00:00,534590,Cranbury United,NP1
+800112,George,Dunwood,George Dunwood,2026,107008,Northland,2006-08-01 00:00:00,Attack,,,,2028-06-30 00:00:00,202200,Cranbury United,NP1
+800113,Sam,Bradridge,Sam Bradridge,2026,107009,Northland,1998-10-24 00:00:00,Goalkeeper,,,,2030-06-30 00:00:00,63110,Halham Athletic,NC2
+800114,Liam,Mayhew,Liam Mayhew,2026,107009,Northland,1996-04-01 00:00:00,Goalkeeper,,,,2030-06-30 00:00:00,54920,Halham Athletic,NC2
+800115,Josh,Ruthley,Josh Ruthley,2026,107009,Northland,2001-04-14 00:00:00,Defender,,,,,83310,Halham Athletic,NC2
+800116,Martín,Belmonte,Martín Belmonte,2026,107009,Southmoor,1994-10-27 00:00:00,Defender,,,,2028-06-30 00:00:00,27460,Halham Athletic,NC2
+800117,Luka,Tomek,Luka Tomek,2026,107009,Eastvale,2000-02-03 00:00:00,Defender,,,,2029-06-30 00:00:00,582340,Halham Athletic,NC2
+800118,Liam,Ingram,Liam Ingram,2026,107009,Northland,1995-01-11 00:00:00,Defender,,,,2028-06-30 00:00:00,36250,Halham Athletic,NC2
+800119,Lewis,Millworth,Lewis Millworth,2026,107009,Northland,1993-02-06 00:00:00,Defender,,,,2028-06-30 00:00:00,36250,Halham Athletic,NC2
+800120,Lewis,Dunmore,Lewis Dunmore,2026,107009,Northland,1994-10-23 00:00:00,Midfield,,,,2028-06-30 00:00:00,23900,Halham Athletic,NC2
+800121,Adam,Tolland,Adam Tolland,2026,107009,Northland,2007-08-04 00:00:00,Midfield,,,,2029-06-30 00:00:00,266950,Halham Athletic,NC2
+800122,Dylan,Holloway,Dylan Holloway,2026,107009,Northland,2005-11-10 00:00:00,Midfield,,,,2027-06-30 00:00:00,66560,Halham Athletic,NC2
+800123,Tyler,Hartcombe,Tyler Hartcombe,2026,107009,Northland,2004-08-16 00:00:00,Attack,,,,2029-06-30 00:00:00,38190,Halham Athletic,NC2
+800124,Ethan,Quayle,Ethan Quayle,2026,107009,Northland,2002-07-15 00:00:00,Attack,,,,2030-06-30 00:00:00,57930,Halham Athletic,NC2
+800125,Max,Bradley,Max Bradley,2026,107009,Northland,1994-08-23 00:00:00,Midfield,,,,2027-06-30 00:00:00,72600,Halham Athletic,NC2
+800126,Alex,Langworth,Alex Langworth,2026,107009,Northland,1995-04-28 00:00:00,Attack,,,,2028-06-30 00:00:00,47860,Halham Athletic,NC2
+800127,Harvey,Weyton,Harvey Weyton,2026,107010,Northland,2000-01-25 00:00:00,Goalkeeper,,,,2029-06-30 00:00:00,27430,Cranwick Athletic,NC2
+800128,Adrián,Calano,Adrián Calano,2026,107010,Southmoor,1997-01-12 00:00:00,Goalkeeper,,,,2027-06-30 00:00:00,63110,Cranwick Athletic,NC2
+800129,Kieran,Ingram,Kieran Ingram,2026,107010,Northland,1991-07-14 00:00:00,Defender,,,,2027-06-30 00:00:00,41660,Cranwick Athletic,NC2
+800130,Branko,Gorar,Branko Gorar,2026,107010,Eastvale,2007-12-30 00:00:00,Defender,,,,2027-06-30 00:00:00,175980,Cranwick Athletic,NC2
+800131,Jack,Fenwick,Jack Fenwick,2026,107010,Northland,1994-03-18 00:00:00,Defender,,,,2029-06-30 00:00:00,6850,Cranwick Athletic,NC2
+800132,Luke,Langshaw,Luke Langshaw,2026,107010,Northland,1991-07-11 00:00:00,Defender,,,,2030-06-30 00:00:00,47860,Cranwick Athletic,NC2
+800133,Luke,Bramwell,Luke Bramwell,2026,107010,Northland,2006-03-09 00:00:00,Defender,,,,,87880,Cranwick Athletic,NC2
+800134,Mason,Millshaw,Mason Millshaw,2026,107010,Northland,1997-06-03 00:00:00,Midfield,,,,2030-06-30 00:00:00,83310,Cranwick Athletic,NC2
+800135,Toby,Wakewell,Toby Wakewell,2026,107010,Northland,2006-05-05 00:00:00,Midfield,,,,2030-06-30 00:00:00,38190,Cranwick Athletic,NC2
+800136,Sam,Waketon,Sam Waketon,2026,107010,Northland,1997-12-27 00:00:00,Midfield,,,,2029-06-30 00:00:00,72510,Cranwick Athletic,NC2
+800137,Harry,Bradmore,Harry Bradmore,2026,107010,Northland,2007-05-04 00:00:00,Attack,,,,2030-06-30 00:00:00,19070,Cranwick Athletic,NC2
+800138,Sam,Bramwell,Sam Bramwell,2026,107010,Northland,1995-01-02 00:00:00,Attack,,,,2027-06-30 00:00:00,83420,Cranwick Athletic,NC2
+800139,Jack,Fairford,Jack Fairford,2026,107010,Northland,1996-04-11 00:00:00,Midfield,,,,2028-06-30 00:00:00,72510,Cranwick Athletic,NC2
+800140,Dan,Yardley,Dan Yardley,2026,107010,Northland,2001-10-14 00:00:00,Attack,,,,2028-06-30 00:00:00,23870,Cranwick Athletic,NC2
+800141,Owen,Norcross,Owen Norcross,2026,107011,Northland,2005-07-22 00:00:00,Goalkeeper,,,,2028-06-30 00:00:00,87880,Radton City,NC2
+800142,Leo,Weyley,Leo Weyley,2026,107011,Northland,1993-01-23 00:00:00,Goalkeeper,,,,2030-06-30 00:00:00,47860,Radton City,NC2
+800143,Will,Thornshaw,Will Thornshaw,2026,107011,Northland,2007-04-11 00:00:00,Defender,,,,2028-06-30 00:00:00,175980,Radton City,NC2
+800144,Reece,Dunton,Reece Dunton,2026,107011,Northland,2007-02-10 00:00:00,Defender,,,,2028-06-30 00:00:00,57930,Radton City,NC2
+800145,Nathan,Langwell,Nathan Langwell,2026,107011,Northland,1997-10-22 00:00:00,Defender,,,,2030-06-30 00:00:00,126380,Radton City,NC2
+800146,Jan,Borak,Jan Borak,2026,107011,Eastvale,2007-08-13 00:00:00,Defender,,,,2029-06-30 00:00:00,116020,Radton City,NC2
+800147,Luka,Rakić,Luka Rakić,2026,107011,Eastvale,2006-05-03 00:00:00,Defender,,,,2028-06-30 00:00:00,153160,Radton City,NC2
+800148,Will,Tolland,Will Tolland,2026,107011,Northland,2004-01-19 00:00:00,Midfield,,,,,153160,Radton City,NC2
+800149,Henry,Dunby,Henry Dunby,2026,107011,Northland,2005-03-12 00:00:00,Midfield,,,,2030-06-30 00:00:00,66560,Radton City,NC2
+800150,Oliver,Oakes,Oliver Oakes,2026,107011,Northland,2007-10-16 00:00:00,Midfield,,,,2027-06-30 00:00:00,133300,Radton City,NC2
+800151,Noah,Cranwood,Noah Cranwood,2026,107011,Northland,1997-12-23 00:00:00,Attack,,,,2027-06-30 00:00:00,290790,Radton City,NC2
+800152,Dan,Ruthshaw,Dan Ruthshaw,2026,107011,Northland,2001-03-24 00:00:00,Attack,,,,2029-06-30 00:00:00,36210,Radton City,NC2
+800153,James,Garside,James Garside,2026,107011,Northland,1992-10-10 00:00:00,Midfield,,,,,20800,Radton City,NC2
+800154,Alex,Thornridge,Alex Thornridge,2026,107011,Northland,1995-12-30 00:00:00,Attack,,,,2028-06-30 00:00:00,109990,Radton City,NC2
+800155,Ryan,Cranshaw,Ryan Cranshaw,2026,107012,Northland,2002-07-26 00:00:00,Goalkeeper,,,,2030-06-30 00:00:00,266950,Kingsfield United,NC2
+800156,Martín,Ibero,Martín Ibero,2026,107012,Southmoor,2004-06-10 00:00:00,Goalkeeper,,,,2027-06-30 00:00:00,100970,Kingsfield United,NC2
+800157,Igor,Borov,Igor Borov,2026,107012,Eastvale,1991-11-04 00:00:00,Defender,,,,2029-06-30 00:00:00,31550,Kingsfield United,NC2
+800158,Noah,Ashby,Noah Ashby,2026,107012,Northland,2000-06-10 00:00:00,Defender,,,,2030-06-30 00:00:00,83310,Kingsfield United,NC2
+800159,Toby,Brookmore,Toby Brookmore,2026,107012,Northland,2001-12-13 00:00:00,Defender,,,,,23870,Kingsfield United,NC2
+800160,Kieran,Hartworth,Kieran Hartworth,2026,107012,Northland,2002-05-04 00:00:00,Defender,,,,2029-06-30 00:00:00,18080,Kingsfield United,NC2
+800161,Max,Langfield,Max Langfield,2026,107012,Northland,1994-10-14 00:00:00,Defender,,,,2029-06-30 00:00:00,13710,Kingsfield United,NC2
+800162,George,Ellery,George Ellery,2026,107012,Northland,2004-04-01 00:00:00,Midfield,,,,2028-06-30 00:00:00,38190,Kingsfield United,NC2
+800163,Charlie,Pritchard,Charlie Pritchard,2026,107012,Northland,2005-12-14 00:00:00,Midfield,,,,2028-06-30 00:00:00,43880,Kingsfield United,NC2
+800164,Liam,Ashton,Liam Ashton,2026,107012,Northland,1998-03-29 00:00:00,Midfield,,,,2029-06-30 00:00:00,126380,Kingsfield United,NC2
+800165,Dylan,Hayby,Dylan Hayby,2026,107012,Northland,1996-02-08 00:00:00,Attack,,,,2028-06-30 00:00:00,15740,Kingsfield United,NC2
+800166,Harry,Whitwell,Harry Whitwell,2026,107012,Northland,2002-09-21 00:00:00,Attack,,,,2030-06-30 00:00:00,100970,Kingsfield United,NC2
+800167,Dylan,Marsby,Dylan Marsby,2026,107012,Northland,1998-10-18 00:00:00,Midfield,,,,2029-06-30 00:00:00,126380,Kingsfield United,NC2
+800168,Henry,Hartcombe,Henry Hartcombe,2026,107012,Northland,1995-12-28 00:00:00,Attack,,,,2029-06-30 00:00:00,109990,Kingsfield United,NC2
+800169,Dylan,Langcombe,Dylan Langcombe,2026,107013,Northland,1994-02-08 00:00:00,Goalkeeper,,,,2029-06-30 00:00:00,23900,Kingsbury Town,NC2
+800170,Tyler,Langmore,Tyler Langmore,2026,107013,Northland,2000-02-03 00:00:00,Goalkeeper,,,,2029-06-30 00:00:00,20770,Kingsbury Town,NC2
+800171,Max,Cranshaw,Max Cranshaw,2026,107013,Northland,2002-01-15 00:00:00,Defender,,,,2028-06-30 00:00:00,109990,Kingsbury Town,NC2
+800172,Alex,Bradwell,Alex Bradwell,2026,107013,Northland,2002-08-26 00:00:00,Defender,,,,2027-06-30 00:00:00,202200,Kingsbury Town,NC2
+800173,Dominik,Lipić,Dominik Lipić,2026,107013,Eastvale,1992-03-19 00:00:00,Defender,,,,2027-06-30 00:00:00,36250,Kingsbury Town,NC2
+800174,Ethan,Blackworth,Ethan Blackworth,2026,107013,Northland,1995-08-22 00:00:00,Defender,,,,2029-06-30 00:00:00,27430,Kingsbury Town,NC2
+800175,Ryan,Chapfield,Ryan Chapfield,2026,107013,Northland,2000-03-18 00:00:00,Defender,,,,2030-06-30 00:00:00,191700,Kingsbury Town,NC2
+800176,Leo,Langcombe,Leo Langcombe,2026,107013,Northland,1993-10-30 00:00:00,Midfield,,,,2027-06-30 00:00:00,18100,Kingsbury Town,NC2
+800177,Sean,Garcombe,Sean Garcombe,2026,107013,Northland,2007-12-01 00:00:00,Midfield,,,,,50420,Kingsbury Town,NC2
+800178,Rhys,Thornton,Rhys Thornton,2026,107013,Northland,1996-02-04 00:00:00,Midfield,,,,2027-06-30 00:00:00,27430,Kingsbury Town,NC2
+800179,Bojan,Lesar,Bojan Lesar,2026,107013,Eastvale,2000-01-30 00:00:00,Attack,,,,2028-06-30 00:00:00,41600,Kingsbury Town,NC2
+800180,Will,Bradmore,Will Bradmore,2026,107013,Northland,1997-10-07 00:00:00,Attack,,,,2029-06-30 00:00:00,63110,Kingsbury Town,NC2
+800181,Sava,Sedlar,Sava Sedlar,2026,107013,Eastvale,1992-06-20 00:00:00,Midfield,,,,2028-06-30 00:00:00,18100,Kingsbury Town,NC2
+800182,James,Stanton,James Stanton,2026,107013,Northland,1998-06-02 00:00:00,Attack,,,,2027-06-30 00:00:00,95730,Kingsbury Town,NC2
+800183,Sam,Wakeby,Sam Wakeby,2026,107014,Northland,1999-08-14 00:00:00,Goalkeeper,,,,2027-06-30 00:00:00,36210,Northbury Rovers,NC2
+800184,Theo,Chapworth,Theo Chapworth,2026,107014,Northland,1992-09-30 00:00:00,Goalkeeper,,,,2028-06-30 00:00:00,54990,Northbury Rovers,NC2
+800185,Sam,Chapwood,Sam Chapwood,2026,107014,Northland,1999-07-16 00:00:00,Defender,,,,2027-06-30 00:00:00,27430,Northbury Rovers,NC2
+800186,Harry,Garwell,Harry Garwell,2026,107014,Northland,1995-10-05 00:00:00,Defender,,,,2030-06-30 00:00:00,63110,Northbury Rovers,NC2
+800187,Dragan,Mrak,Dragan Mrak,2026,107014,Eastvale,1993-06-13 00:00:00,Defender,,,,,15760,Northbury Rovers,NC2
+800188,Harry,Ruthwood,Harry Ruthwood,2026,107014,Northland,2003-02-02 00:00:00,Defender,,,,2027-06-30 00:00:00,153160,Northbury Rovers,NC2
+800189,Lewis,Ashford,Lewis Ashford,2026,107014,Northland,1992-11-20 00:00:00,Defender,,,,,10390,Northbury Rovers,NC2
+800190,Callum,Langley,Callum Langley,2026,107014,Northland,2003-12-08 00:00:00,Midfield,,,,2027-06-30 00:00:00,28930,Northbury Rovers,NC2
+800191,Kieran,Hartley,Kieran Hartley,2026,107014,Northland,1993-07-31 00:00:00,Midfield,,,,2030-06-30 00:00:00,20800,Northbury Rovers,NC2
+800192,Harry,Pritchard,Harry Pritchard,2026,107014,Northland,1996-11-22 00:00:00,Midfield,,,,2029-06-30 00:00:00,54920,Northbury Rovers,NC2
+800193,Kieran,Ruthfield,Kieran Ruthfield,2026,107014,Northland,1992-12-15 00:00:00,Attack,,,,2030-06-30 00:00:00,23900,Northbury Rovers,NC2
+800194,Lewis,Weywood,Lewis Weywood,2026,107014,Northland,1993-12-15 00:00:00,Attack,,,,2027-06-30 00:00:00,31550,Northbury Rovers,NC2
+800195,Aaron,Hartfield,Aaron Hartfield,2026,107014,Northland,1999-03-12 00:00:00,Midfield,,,,2028-06-30 00:00:00,72510,Northbury Rovers,NC2
+800196,Owen,Varley,Owen Varley,2026,107014,Northland,2003-09-24 00:00:00,Attack,,,,2027-06-30 00:00:00,116020,Northbury Rovers,NC2
+800197,Noah,Cranworth,Noah Cranworth,2026,107015,Northland,2004-07-04 00:00:00,Goalkeeper,,,,2027-06-30 00:00:00,57930,Halstead United,NC2
+800198,Dylan,Garshaw,Dylan Garshaw,2026,107015,Northland,1999-12-14 00:00:00,Goalkeeper,,,,2030-06-30 00:00:00,15740,Halstead United,NC2
+800199,Zach,Northton,Zach Northton,2026,107015,Northland,1995-02-19 00:00:00,Defender,,,,2027-06-30 00:00:00,41660,Halstead United,NC2
+800200,Charlie,Garley,Charlie Garley,2026,107015,Northland,2006-07-10 00:00:00,Defender,,,,2027-06-30 00:00:00,266950,Halstead United,NC2
+800201,Lewis,Hayfield,Lewis Hayfield,2026,107015,Northland,2006-06-30 00:00:00,Defender,,,,2028-06-30 00:00:00,43880,Halstead United,NC2
+800202,Aaron,Dunshaw,Aaron Dunshaw,2026,107015,Northland,1995-04-24 00:00:00,Defender,,,,2028-06-30 00:00:00,13710,Halstead United,NC2
+800203,Liam,Ruthcombe,Liam Ruthcombe,2026,107015,Northland,1996-08-21 00:00:00,Defender,,,,,27430,Halstead United,NC2
+800204,Charlie,Fairmore,Charlie Fairmore,2026,107015,Northland,1996-05-06 00:00:00,Midfield,,,,,20770,Halstead United,NC2
+800205,Harry,Weyford,Harry Weyford,2026,107015,Northland,1994-03-30 00:00:00,Midfield,,,,,47860,Halstead United,NC2
+800206,Scott,Thornwood,Scott Thornwood,2026,107015,Northland,2007-07-09 00:00:00,Midfield,,,,2028-06-30 00:00:00,76480,Halstead United,NC2
+800207,Joe,Sheley,Joe Sheley,2026,107015,Northland,2004-12-27 00:00:00,Attack,,,,2029-06-30 00:00:00,43880,Halstead United,NC2
+800208,Matt,Carver,Matt Carver,2026,107015,Northland,1996-05-05 00:00:00,Attack,,,,,72510,Halstead United,NC2
+800209,Dylan,Whitlock,Dylan Whitlock,2026,107015,Northland,1998-08-31 00:00:00,Midfield,,,,2029-06-30 00:00:00,54920,Halstead United,NC2
+800210,Harry,Ruthby,Harry Ruthby,2026,107015,Northland,2006-08-22 00:00:00,Attack,,,,2028-06-30 00:00:00,50420,Halstead United,NC2
+800211,George,Kendrick,George Kendrick,2026,107016,Northland,2001-12-16 00:00:00,Goalkeeper,,,,2028-06-30 00:00:00,54920,Radwick Athletic,NC2
+800212,Toby,Preshaw,Toby Preshaw,2026,107016,Northland,2007-05-10 00:00:00,Goalkeeper,,,,2028-06-30 00:00:00,153160,Radwick Athletic,NC2
+800213,Ethan,Mayhew,Ethan Mayhew,2026,107016,Northland,2003-07-26 00:00:00,Defender,,,,2027-06-30 00:00:00,57930,Radwick Athletic,NC2
+800214,Leo,Bramwell,Leo Bramwell,2026,107016,Northland,1999-04-15 00:00:00,Defender,,,,,95730,Radwick Athletic,NC2
+800215,Nathan,Cranridge,Nathan Cranridge,2026,107016,Northland,2001-03-03 00:00:00,Defender,,,,,36210,Radwick Athletic,NC2
+800216,Aaron,Shelworth,Aaron Shelworth,2026,107016,Northland,1998-06-04 00:00:00,Defender,,,,2030-06-30 00:00:00,31510,Radwick Athletic,NC2
+800217,Callum,Bradworth,Callum Bradworth,2026,107016,Northland,1992-12-22 00:00:00,Defender,,,,,13710,Radwick Athletic,NC2
+800218,Andrej,Lipović,Andrej Lipović,2026,107016,Eastvale,2007-11-04 00:00:00,Midfield,,,,2028-06-30 00:00:00,43880,Radwick Athletic,NC2
+800219,Max,Stanley,Max Stanley,2026,107016,Northland,2007-04-20 00:00:00,Midfield,,,,2027-06-30 00:00:00,76480,Radwick Athletic,NC2
+800220,James,Fairmore,James Fairmore,2026,107016,Northland,2000-01-23 00:00:00,Midfield,,,,2028-06-30 00:00:00,83310,Radwick Athletic,NC2
+800221,Noah,Sowerby,Noah Sowerby,2026,107016,Northland,1997-02-11 00:00:00,Attack,,,,2027-06-30 00:00:00,54920,Radwick Athletic,NC2
+800222,Vuk,Jurak,Vuk Jurak,2026,107016,Eastvale,1998-06-20 00:00:00,Attack,,,,,54920,Radwick Athletic,NC2
+800223,Max,Northfield,Max Northfield,2026,107016,Northland,1993-04-15 00:00:00,Midfield,,,,2028-06-30 00:00:00,41660,Radwick Athletic,NC2
+800224,Leo,Marswood,Leo Marswood,2026,107016,Northland,1998-10-14 00:00:00,Attack,,,,,27430,Radwick Athletic,NC2
+899999,Unrated,Prospect,Unrated Prospect,2026,107001,Northland,2008-03-03 00:00:00,Goalkeeper,,,,2030-06-30 00:00:00,404930,Caldbury Town,NP1
