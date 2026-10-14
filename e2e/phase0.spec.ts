@@ -43,28 +43,42 @@ test('register → create save → navigate shell → sign out → sign in → d
   await dialog.getByLabel('World seed (optional)').fill('e2e-seed');
   await dialog.getByRole('button', { name: 'Start career' }).click();
 
-  // Game shell: top bar, date, sidebar.
-  await expect(page).toHaveURL(/\/game\/[^/]+\/inbox$/);
-  await expect(page.getByRole('heading', { name: 'Inbox', level: 2 })).toBeVisible();
-  await expect(page.getByLabel('Current in-game date')).toHaveText('Wed, 1 Jul 2026');
-  await expect(page.getByText('e2e-seed')).toBeVisible();
+  // A new career starts by choosing a club.
+  await expect(page).toHaveURL(/\/game\/[^/]+\/choose-club$/);
+  await page.getByRole('table', { name: 'Clubs you can manage' }).getByRole('row').nth(1).click();
+  await page.getByRole('button', { name: 'Accept job' }).click();
+  await expect(page).toHaveURL(/\/club$/);
 
+  // Game shell: top bar, date, sidebar.
+  await expect(page.getByLabel('Current in-game date')).toHaveText('Wed, 1 Jul 2026');
   const nav = page.getByRole('navigation', { name: 'Game sections' });
-  for (const section of ['Squad', 'Tactics', 'Transfers', 'Finances', 'League', 'Search']) {
+  for (const section of [
+    'Inbox',
+    'Squad',
+    'Tactics',
+    'Transfers',
+    'Finances',
+    'League',
+    'Search',
+  ]) {
     await nav.getByRole('link', { name: section, exact: true }).click();
-    await expect(page.getByRole('heading', { name: section, level: 2 })).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`/${section.toLowerCase()}$`));
     await expect(nav.getByRole('link', { name: section, exact: true })).toHaveAttribute(
       'aria-current',
       'page',
     );
   }
+  // Unbuilt sections say which phase delivers them; the career card shows the seed.
+  await nav.getByRole('link', { name: 'Tactics', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Tactics', level: 2 })).toBeVisible();
+  await expect(page.getByText('e2e-seed')).toBeVisible();
   await page.screenshot({ path: 'test-results/shell.png' });
 
   // Keyboard: g then f jumps to Finances; Space triggers Continue.
   await page.locator('main').click();
   await page.keyboard.press('g');
   await page.keyboard.press('f');
-  await expect(page.getByRole('heading', { name: 'Finances', level: 2 })).toBeVisible();
+  await expect(page).toHaveURL(/\/finances$/);
   await page.keyboard.press('Space');
   await expect(page.getByText('Time advancement arrives with the season loop')).toBeVisible();
 

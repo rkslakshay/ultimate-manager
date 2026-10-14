@@ -2,6 +2,7 @@ import type { SaveGameDto } from '@um/shared';
 import {
   CalendarDays,
   ChevronRight,
+  Database,
   Keyboard,
   LogOut,
   Palette,
@@ -19,9 +20,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { formatGameDate, initials } from '@/lib/format';
+import { ClubBadge } from '@/components/game/ClubBadge';
+import { formatGameDate } from '@/lib/format';
 import { useUiStore } from '@/stores/ui-store';
 import { useLogout, useMe } from '../auth/api';
+import { useClub } from '../world/api';
 
 interface TopBarProps {
   save: SaveGameDto;
@@ -34,18 +37,22 @@ export function TopBar({ save, title, onContinue }: TopBarProps) {
   const { data: user } = useMe();
   const logout = useLogout();
   const setShortcutsOpen = useUiStore((s) => s.setShortcutsOpen);
-  // TODO(phase-1): real club name, colours and badge once the world exists.
-  const clubName = save.clubName ?? 'No club';
+  const club = useClub(save.id, save.managerClubId);
+  const clubName = save.clubName ?? 'Unemployed';
 
   return (
     <header className="flex h-(--topbar-height) shrink-0 items-center gap-3 border-b border-border bg-surface px-3 sm:px-4">
       <div className="flex min-w-0 items-center gap-2.5">
-        <div
-          className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border-strong bg-surface-3 text-2xs font-bold text-fg-muted"
-          aria-hidden
-        >
-          {save.clubName ? initials(save.clubName) : '—'}
-        </div>
+        {club.data ? (
+          <ClubBadge club={club.data} size="md" />
+        ) : (
+          <div
+            className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border-strong bg-surface-3 text-2xs font-bold text-fg-muted"
+            aria-hidden
+          >
+            —
+          </div>
+        )}
         <div className="flex min-w-0 flex-col leading-tight">
           <span className="truncate text-sm font-semibold">{clubName}</span>
           <span className="truncate text-2xs text-fg-subtle">
@@ -87,6 +94,11 @@ export function TopBar({ save, title, onContinue }: TopBarProps) {
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => setShortcutsOpen(true)}>
               <Keyboard /> Keyboard shortcuts
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to={`/game/${save.id}/editor`}>
+                <Database /> Database editor
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to={`/game/${save.id}/ui-kit`}>

@@ -1,0 +1,131 @@
+import type { PlayerSummaryDto } from '@um/shared';
+import type { ColumnDef } from '@tanstack/react-table';
+import { Link } from 'react-router';
+import { ClubBadge } from '@/components/game/ClubBadge';
+import { Stars } from '@/components/game/Stars';
+import { Badge } from '@/components/ui/badge';
+import { contractEnd, fullName, money, SQUAD_STATUS_LABELS, wage } from '@/lib/game-format';
+
+interface Options {
+  saveId: string;
+  showClub?: boolean;
+  /** Server-sorted tables only allow sorting on fields the API supports. */
+  serverSortable?: boolean;
+}
+
+/** Column ids the player-search API can sort by (matching PLAYER_SORT_FIELDS). */
+export const SERVER_SORT_IDS = new Set(['name', 'age', 'ca', 'pa', 'value', 'wage', 'contractEnd']);
+
+export function playerColumns({
+  saveId,
+  showClub = false,
+  serverSortable = false,
+}: Options): ColumnDef<PlayerSummaryDto>[] {
+  const sortable = (id: string) => (serverSortable ? SERVER_SORT_IDS.has(id) : true);
+  const columns: ColumnDef<PlayerSummaryDto>[] = [
+    {
+      id: 'name',
+      header: 'Name',
+      accessorFn: (p) => `${p.lastName} ${p.firstName}`,
+      enableHiding: false,
+      cell: ({ row }) => (
+        <Link
+          to={`/game/${saveId}/players/${row.original.id}`}
+          className="font-medium text-fg hover:text-accent-text hover:underline"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {fullName(row.original)}
+        </Link>
+      ),
+    },
+    {
+      id: 'position',
+      accessorKey: 'position',
+      header: 'Pos',
+      enableSorting: sortable('position'),
+      size: 56,
+    },
+    { id: 'age', accessorKey: 'age', header: 'Age', meta: { align: 'right' }, size: 56 },
+    {
+      id: 'nation',
+      accessorKey: 'nationCode',
+      header: 'Nat',
+      enableSorting: sortable('nation'),
+      meta: { label: 'Nationality' },
+      size: 56,
+      cell: ({ getValue }) => (
+        <span className="font-mono text-xs text-fg-muted">{getValue<string>()}</span>
+      ),
+    },
+  ];
+  if (showClub) {
+    columns.push({
+      id: 'club',
+      header: 'Club',
+      accessorFn: (p) => p.club?.name ?? '',
+      enableSorting: sortable('club'),
+      cell: ({ row }) =>
+        row.original.club ? (
+          <Link
+            to={`/game/${saveId}/clubs/${row.original.club.id}`}
+            className="inline-flex items-center gap-1.5 hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ClubBadge club={row.original.club} />
+            {row.original.club.name}
+          </Link>
+        ) : (
+          <span className="text-fg-subtle">Free agent</span>
+        ),
+    });
+  }
+  columns.push(
+    {
+      id: 'ca',
+      accessorKey: 'ca',
+      header: 'Ability',
+      meta: { label: 'Current ability' },
+      cell: ({ getValue }) => <Stars ability={getValue<number>()} label="Current ability" />,
+    },
+    {
+      id: 'pa',
+      accessorKey: 'pa',
+      header: 'Potential',
+      cell: ({ getValue }) => <Stars ability={getValue<number>()} label="Potential" />,
+    },
+    {
+      id: 'value',
+      accessorKey: 'value',
+      header: 'Value',
+      meta: { align: 'right' },
+      cell: ({ getValue }) => money(getValue<number>()),
+    },
+    {
+      id: 'wage',
+      accessorFn: (p) => p.wage ?? -1,
+      header: 'Wage',
+      meta: { align: 'right' },
+      cell: ({ row }) => wage(row.original.wage),
+    },
+    {
+      id: 'contractEnd',
+      accessorFn: (p) => p.contractEnd ?? '',
+      header: 'Contract',
+      meta: { align: 'right', label: 'Contract expires' },
+      cell: ({ row }) => contractEnd(row.original.contractEnd),
+    },
+    {
+      id: 'status',
+      accessorFn: (p) => p.squadStatus ?? '',
+      header: 'Status',
+      enableSorting: sortable('status'),
+      cell: ({ row }) =>
+        row.original.squadStatus ? (
+          <Badge tone={row.original.squadStatus === 'key' ? 'accent' : 'neutral'}>
+            {SQUAD_STATUS_LABELS[row.original.squadStatus] ?? row.original.squadStatus}
+          </Badge>
+        ) : null,
+    },
+  );
+  return columns;
+}

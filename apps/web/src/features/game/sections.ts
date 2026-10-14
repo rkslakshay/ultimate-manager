@@ -29,7 +29,7 @@ const META: Record<GameSectionId, SectionMeta> = {
   },
   squad: {
     icon: Users,
-    phase: 4,
+    phase: 1,
     summary: 'Sortable squad tables, custom column views, player cards and profiles.',
   },
   tactics: {
@@ -59,7 +59,7 @@ const META: Record<GameSectionId, SectionMeta> = {
   },
   club: {
     icon: Building2,
-    phase: 7,
+    phase: 1,
     summary: 'Board confidence, objectives, staff, facilities and club history.',
   },
   fixtures: {
@@ -69,7 +69,7 @@ const META: Record<GameSectionId, SectionMeta> = {
   },
   league: {
     icon: Trophy,
-    phase: 3,
+    phase: 1,
     summary: 'League tables, top scorers, assists and ratings.',
   },
   search: {

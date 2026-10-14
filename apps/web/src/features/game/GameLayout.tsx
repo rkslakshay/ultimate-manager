@@ -1,16 +1,35 @@
 import { ArrowLeft } from 'lucide-react';
 import { useCallback, useEffect, useRef } from 'react';
-import { Link, Outlet, useLocation, useParams } from 'react-router';
+import { Link, Navigate, Outlet, useLocation, useParams } from 'react-router';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ApiError, errorMessage } from '@/lib/api';
 import { useLoadSave, useSave } from '../saves/api';
+import { useGenerateWorld } from '../world/api';
 import { findSection } from './sections';
 import { ShortcutsDialog } from './ShortcutsDialog';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { useGameShortcuts } from './useGameShortcuts';
+
+const PAGE_TITLES: Record<string, string> = {
+  'ui-kit': 'UI Kit',
+  'choose-club': 'Choose your club',
+  clubs: 'Club',
+  players: 'Player',
+  editor: 'Database editor',
+};
+/** Pages usable before a club has been chosen. */
+const NO_CLUB_PAGES = new Set([
+  'choose-club',
+  'ui-kit',
+  'editor',
+  'clubs',
+  'players',
+  'search',
+  'league',
+]);
 
 export function GameLayout() {
   const { saveId = '' } = useParams();
@@ -36,8 +55,14 @@ export function GameLayout() {
   }, []);
   useGameShortcuts(saveId, onContinue);
 
-  const segment = location.pathname.split('/')[3];
-  const title = segment === 'ui-kit' ? 'UI Kit' : (findSection(segment)?.label ?? '');
+  const segment = location.pathname.split('/')[3] ?? '';
+  const title = PAGE_TITLES[segment] ?? findSection(segment)?.label ?? '';
+  const generate = useGenerateWorld(saveId);
+  const needsWorld = save.data !== undefined && !save.data.hasWorld;
+  const { mutate: generateWorld } = generate;
+  useEffect(() => {
+    if (needsWorld) generateWorld();
+  }, [needsWorld, generateWorld]);
 
   if (save.isError) {
     const notFound = save.error instanceof ApiError && save.error.status === 404;
@@ -56,6 +81,29 @@ export function GameLayout() {
         </Button>
       </div>
     );
+  }
+
+  if (needsWorld) {
+    return (
+      <div
+        className="flex min-h-dvh flex-col items-center justify-center gap-3 p-6 text-center"
+        role="status"
+      >
+        <h1 className="text-lg font-semibold">
+          {generate.isError ? 'Could not generate the world' : 'Generating your world…'}
+        </h1>
+        <p className="text-sm text-fg-muted">
+          {generate.isError
+            ? errorMessage(generate.error)
+            : 'Nations, leagues, clubs and thousands of players are being created from your seed.'}
+        </p>
+        {generate.isError && <Button onClick={() => generateWorld()}>Try again</Button>}
+      </div>
+    );
+  }
+  // Every career starts by choosing a club; pages outside the club context stay reachable.
+  if (save.data && save.data.managerClubId === null && !NO_CLUB_PAGES.has(segment)) {
+    return <Navigate to={`/game/${saveId}/choose-club`} replace />;
   }
 
   return (

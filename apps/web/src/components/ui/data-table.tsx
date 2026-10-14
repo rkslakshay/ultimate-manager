@@ -34,6 +34,17 @@ declare module '@tanstack/react-table' {
   }
 }
 
+/** Server-driven sorting and paging: rows arrive already sorted and paginated. */
+export interface ServerSideOptions {
+  sorting: SortingState;
+  onSortingChange: (sorting: SortingState) => void;
+  /** 1-based page number. */
+  page: number;
+  pageCount: number;
+  total: number;
+  onPageChange: (page: number) => void;
+}
+
 export interface DataTableProps<TData> {
   // TanStack's ColumnDef needs `any` for the value type to accept mixed column types.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -56,6 +67,8 @@ export interface DataTableProps<TData> {
   getRowId?: (row: TData, index: number) => string;
   toolbar?: ReactNode;
   className?: string;
+  /** Hand sorting and pagination to the server (large lists like player search). */
+  server?: ServerSideOptions;
 }
 
 const alignClass = { left: 'text-left', right: 'text-right', center: 'text-center' } as const;
@@ -77,6 +90,7 @@ export function DataTable<TData>({
   getRowId,
   toolbar,
   className,
+  server,
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>(initialSorting);
   const [globalFilter, setGlobalFilter] = useState('');
@@ -90,12 +104,16 @@ export function DataTable<TData>({
   const table = useReactTable({
     data,
     columns,
-    state: { sorting, globalFilter, columnVisibility },
-    onSortingChange: setSorting,
+    state: { sorting: server ? server.sorting : sorting, globalFilter, columnVisibility },
+    onSortingChange: server
+      ? (updater) =>
+          server.onSortingChange(typeof updater === 'function' ? updater(server.sorting) : updater)
+      : setSorting,
+    ...(server ? { manualSorting: true, manualPagination: true, enableSortingRemoval: false } : {}),
     onGlobalFilterChange: setGlobalFilter,
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    ...(server ? {} : { getSortedRowModel: getSortedRowModel() }),
     getFilteredRowModel: getFilteredRowModel(),
     ...(pageSize
       ? {
@@ -263,7 +281,29 @@ export function DataTable<TData>({
         </table>
       </div>
 
-      {pageSize && table.getPageCount() > 1 && (
+      {server && server.pageCount > 1 && (
+        <div className="flex items-center justify-end gap-2 text-xs text-fg-muted">
+          <span className="tabular">
+            Page {server.page} of {server.pageCount} · {server.total.toLocaleString()} results
+          </span>
+          <Button
+            size="sm"
+            onClick={() => server.onPageChange(server.page - 1)}
+            disabled={server.page <= 1}
+          >
+            Previous
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => server.onPageChange(server.page + 1)}
+            disabled={server.page >= server.pageCount}
+          >
+            Next
+          </Button>
+        </div>
+      )}
+
+      {!server && pageSize && table.getPageCount() > 1 && (
         <div className="flex items-center justify-end gap-2 text-xs text-fg-muted">
           <span className="tabular">
             Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()} ·{' '}
