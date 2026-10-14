@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # CI uses the Postgres service below instead of the embedded dev database.
+  DB_MODE: external
+  DATABASE_URL: postgresql://um:um@localhost:5433/ultimate_manager
+  DATABASE_URL_TEST: postgresql://um:um@localhost:5433/ultimate_manager_test
+  JWT_SECRET: ci-only-secret-that-is-at-least-32-characters
+  HUSKY: '0'
+
+jobs:
+  check:
+    name: Lint, typecheck, test, e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: um
+          POSTGRES_PASSWORD: um
+          POSTGRES_DB: ultimate_manager
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U um -d ultimate_manager"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run db:generate --workspace @um/api
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build --workspace @um/web
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

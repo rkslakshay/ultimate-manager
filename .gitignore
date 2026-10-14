@@ -1,0 +1,16 @@
+node_modules/
+dist/
+build/
+coverage/
+.env
+.env.local
+*.log
+.data/
+apps/api/src/generated/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+.vite/
+*.tsbuildinfo
+.DS_Store
