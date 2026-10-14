@@ -40,10 +40,10 @@ _Last updated: 2026-10-14_
 | `npm run test:e2e`     | ✅ 4 Playwright tests (register, validation, full save flow + shell nav + shortcuts, wrong password) |
 | Manual (browser)       | ✅ register, create save, sidebar + keyboard nav, Continue toast, UI kit                             |
 | Clean clone            | ✅ fresh `git clone` → `npm ci` → `npm run dev` (new .env + DB) → health OK, all tests + E2E pass    |
+| GitHub Actions CI      | ✅ first run green on Linux (Postgres service, tests, build, E2E)                                    |
 
 ### Known issues / limitations
 
-- CI workflow is written but **has not run yet** (no GitHub remote configured).
 - Docker Compose file is untested locally (Docker not installed on the dev machine); CI uses the
   same image via a service container.
 - Embedded PostgreSQL was only exercised on Windows. macOS/Linux depend on its install script
