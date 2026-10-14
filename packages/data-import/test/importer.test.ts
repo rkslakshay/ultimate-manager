@@ -110,10 +110,11 @@ describe('writing, reading and re-importing packs', () => {
     const changed = path.join(root, 'changed');
     fs.cpSync(FIXTURES, changed, { recursive: true });
     const ratings = path.join(changed, 'ratings', 'players.csv');
-    const lines = fs.readFileSync(ratings, 'utf8').split('\r\n');
+    // Line endings depend on the checkout (CRLF on Windows, LF in CI): accept both.
+    const lines = fs.readFileSync(ratings, 'utf8').split(/\r?\n/);
     fs.writeFileSync(
       ratings,
-      [lines[0], ...lines.slice(1).filter((_, i) => i % 50 !== 7)].join('\r\n'),
+      [lines[0], ...lines.slice(1).filter((_, i) => i % 50 !== 7)].join('\n'),
     );
     expect(
       await runImport({
