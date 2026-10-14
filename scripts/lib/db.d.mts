@@ -8,7 +8,10 @@ export interface DbUrlParts {
 
 export function parseDbUrl(url: string): DbUrlParts;
 export function ensurePostgres(url: string, mode?: string): Promise<(() => Promise<void>) | null>;
-export function ensureDatabase(url: string): Promise<void>;
+export function ensureDatabase(
+  url: string,
+  options?: { recreateIfNotUtf8?: boolean },
+): Promise<void>;
 export function migrateDeploy(url: string): Promise<string>;
 export function runPrisma(args: string[], url: string): Promise<string>;
 export function assertPrismaVersionsMatch(require: NodeJS.Require): void;

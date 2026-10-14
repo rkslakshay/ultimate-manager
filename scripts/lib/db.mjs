@@ -64,6 +64,9 @@ export async function ensurePostgres(url, mode = process.env.DB_MODE ?? 'embedde
     password,
     port,
     persistent: true,
+    // Without this, initdb on Windows inherits the system code page (e.g. WIN1252), which
+    // cannot store names like "Babić". Locale C keeps sorting byte-stable across platforms.
+    initdbFlags: ['--encoding=UTF8', '--locale=C'],
     onLog: () => {},
     onError: (msg) => {
       const text = String(msg).trim();
@@ -86,23 +89,120 @@ export async function ensurePostgres(url, mode = process.env.DB_MODE ?? 'embedde
   };
 }
 
-/** Create the database named in `url` if it doesn't exist yet. */
-export async function ensureDatabase(url) {
-  const { host, port, user, password, database } = parseDbUrl(url);
-  const client = new pg.Client({ host, port, user, password, database: 'postgres' });
+const quoteIdent = (name) => `"${name.replace(/"/g, '""')}"`;
+
+/** Return dates/timestamps as raw strings so copied rows round-trip exactly (no TZ shifts). */
+const rawDates = {
+  getTypeParser: (oid, format) =>
+    [1082, 1114, 1184].includes(oid) ? (v) => v : pg.types.getTypeParser(oid, format),
+};
+
+function adminClient(url) {
+  const { host, port, user, password } = parseDbUrl(url);
+  return new pg.Client({ host, port, user, password, database: 'postgres' });
+}
+
+async function createUtf8Database(client, database) {
+  await client.query(
+    `CREATE DATABASE ${quoteIdent(database)} ENCODING 'UTF8' TEMPLATE template0 LC_COLLATE 'C' LC_CTYPE 'C'`,
+  );
+}
+
+async function terminateConnections(client, database) {
+  await client.query(
+    'SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid()',
+    [database],
+  );
+}
+
+/**
+ * Create the database named in `url` (UTF-8) if it doesn't exist yet. Databases created by
+ * older versions with a non-UTF-8 encoding are either recreated (`recreateIfNotUtf8`, for
+ * disposable test databases) or converted, keeping all data and a backup of the original.
+ */
+export async function ensureDatabase(url, { recreateIfNotUtf8 = false } = {}) {
+  const { database } = parseDbUrl(url);
+  const client = adminClient(url);
   await client.connect();
   try {
-    const { rowCount } = await client.query('SELECT 1 FROM pg_database WHERE datname = $1', [
-      database,
-    ]);
-    if (!rowCount) {
-      // Identifier can't be parameterised; quote it safely.
-      await client.query(`CREATE DATABASE "${database.replace(/"/g, '""')}"`);
+    const { rows } = await client.query(
+      'SELECT pg_encoding_to_char(encoding) AS encoding FROM pg_database WHERE datname = $1',
+      [database],
+    );
+    const encoding = rows[0]?.encoding;
+    if (!encoding) {
+      await createUtf8Database(client, database);
       log(`Created database ${database}`);
+    } else if (encoding !== 'UTF8') {
+      if (recreateIfNotUtf8) {
+        await terminateConnections(client, database);
+        await client.query(`DROP DATABASE ${quoteIdent(database)}`);
+        await createUtf8Database(client, database);
+        log(`Recreated ${database} as UTF-8 (was ${encoding})`);
+      } else {
+        await convertToUtf8(client, url, encoding);
+      }
     }
   } finally {
     await client.end();
   }
+}
+
+/** Copy a non-UTF-8 database into a new UTF-8 one, then swap them (original kept as backup). */
+async function convertToUtf8(admin, url, encoding) {
+  const parts = parseDbUrl(url);
+  const tmpName = `${parts.database}__utf8_tmp`;
+  const tmpUrl = Object.assign(new URL(url), { pathname: `/${tmpName}` }).toString();
+  log(`Converting ${parts.database} from ${encoding} to UTF-8 (your data is kept)...`);
+
+  await admin.query(`DROP DATABASE IF EXISTS ${quoteIdent(tmpName)}`);
+  await createUtf8Database(admin, tmpName);
+  await migrateDeploy(tmpUrl);
+
+  const source = new pg.Client({ ...parts, types: rawDates });
+  const target = new pg.Client({ ...parts, database: tmpName, types: rawDates });
+  await source.connect();
+  await target.connect();
+  try {
+    const { rows: tables } = await source.query(
+      `SELECT table_name FROM information_schema.tables
+       WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name <> '_prisma_migrations'`,
+    );
+    // Parents before children so foreign keys are satisfied.
+    const order = ['User', 'Session', 'SaveGame'];
+    const names = tables
+      .map((t) => t.table_name)
+      .sort((a, b) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99));
+    await target.query('BEGIN');
+    for (const table of names) {
+      const { rows } = await source.query(`SELECT * FROM ${quoteIdent(table)}`);
+      for (const row of rows) {
+        const cols = Object.keys(row);
+        const placeholders = cols.map((_, i) => `$${i + 1}`).join(', ');
+        await target.query(
+          `INSERT INTO ${quoteIdent(table)} (${cols.map(quoteIdent).join(', ')}) VALUES (${placeholders})`,
+          cols.map((c) => row[c]),
+        );
+      }
+      if (rows.length) log(`  copied ${rows.length} row(s) from ${table}`);
+    }
+    await target.query('COMMIT');
+  } catch (err) {
+    await target.query('ROLLBACK').catch(() => {});
+    throw err;
+  } finally {
+    await source.end();
+    await target.end();
+  }
+
+  const stamp = new Date().toISOString().replace(/\D/g, '').slice(0, 12);
+  const backup = `${parts.database}_${encoding.toLowerCase()}_backup_${stamp}`;
+  await terminateConnections(admin, parts.database);
+  await admin.query(`ALTER DATABASE ${quoteIdent(parts.database)} RENAME TO ${quoteIdent(backup)}`);
+  await admin.query(
+    `ALTER DATABASE ${quoteIdent(tmpName)} RENAME TO ${quoteIdent(parts.database)}`,
+  );
+  log(`Converted. Original kept as database "${backup}" (safe to drop once you're happy).`);
 }
 
 /** Apply pending Prisma migrations to the database at `url`. */

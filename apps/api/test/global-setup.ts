@@ -20,7 +20,7 @@ export default async function setup(project: TestProject) {
     throw new Error('DATABASE_URL_TEST must differ from DATABASE_URL: tests write test data');
   }
   const stop = await ensurePostgres(url, env.DB_MODE);
-  await ensureDatabase(url);
+  await ensureDatabase(url, { recreateIfNotUtf8: true });
   await migrateDeploy(url);
   project.provide('databaseUrl', url);
   return async () => {
