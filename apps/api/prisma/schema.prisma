@@ -1,0 +1,56 @@
+// Ultimate Manager - database schema
+// Phase 0: users, sessions and save games. Game-world tables arrive in Phase 1.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  displayName  String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  sessions     Session[]
+  saves        SaveGame[]
+}
+
+/// Server-side record of an issued JWT so sessions can be revoked (logout, password change).
+model Session {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  revokedAt DateTime?
+  userAgent String?
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model SaveGame {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  managerName  String
+  /// World seed: the whole world is generated and simulated deterministically from it.
+  seed         String
+  /// Current in-game date.
+  gameDate     DateTime @db.Date
+  /// Denormalised display name of the managed club (null until a club is chosen).
+  clubName     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  lastPlayedAt DateTime @default(now())
+
+  @@index([userId, lastPlayedAt])
+}
