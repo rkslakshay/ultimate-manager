@@ -4,6 +4,7 @@ import {
   playerSearchQuerySchema,
   type ClubDetailDto,
   type CompetitionDetailDto,
+  type PlayerDevelopmentDto,
   type PlayerHistoryDto,
   type PlayerSearchQuery,
   type WorldOverviewDto,
@@ -15,6 +16,7 @@ import type { Prisma, SaveGame } from '../generated/prisma/client';
 import { notFound, parseInput } from '../lib/errors';
 import { idParam, ownedSave, playerContext } from './context';
 import { dateToDay, dayToDate, isoDate } from './convert';
+import { toAttributeChangeDto } from './development';
 import {
   squadStats,
   toClubSummary,
@@ -193,6 +195,21 @@ export async function worldRoutes(app: FastifyInstance, { db }: { db: Db }) {
       total,
       query,
     );
+  });
+
+  /** Long-term attribute changes recorded by progression reviews (newest first). */
+  app.get('/players/:id/development', async (request) => {
+    const save = await ownedSave(app, db, request);
+    const { id } = parseInput(idParam, request.params);
+    const exists = await db.player.count({ where: { saveId: save.id, id } });
+    if (!exists) throw notFound('Player');
+    const rows = await db.playerAttributeChange.findMany({
+      where: { saveId: save.id, playerId: id },
+      orderBy: [{ date: 'desc' }, { attribute: 'asc' }],
+      take: 500,
+    });
+    const response: PlayerDevelopmentDto = { changes: rows.map(toAttributeChangeDto) };
+    return response;
   });
 
   /** Real-world transfer and market-value history from the save's data pack. */

@@ -31,6 +31,7 @@ import {
 import { attributeClass, cn } from '@/lib/utils';
 import { useGameSave } from '../game/useGameSave';
 import { usePlayer } from './api';
+import { PlayerDevelopment } from './PlayerDevelopment';
 import { PlayerHistory } from './PlayerHistory';
 
 const GROUP_TITLES: Record<AttributeGroup, string> = {
@@ -349,6 +350,7 @@ export function PlayerPage() {
         </Card>
       )}
       {p.origin === 'imported' && <PlayerHistory saveId={save.id} playerId={p.id} />}
+      <PlayerDevelopment saveId={save.id} playerId={p.id} />
     </div>
   );
 }

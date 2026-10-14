@@ -62,11 +62,12 @@ model SaveGame {
   updatedAt     DateTime @updatedAt
   lastPlayedAt  DateTime @default(now())
 
-  nations      Nation[]
-  competitions Competition[]
-  stadiums     Stadium[]
-  clubs        Club[]
-  players      Player[]
+  nations          Nation[]
+  competitions     Competition[]
+  stadiums         Stadium[]
+  clubs            Club[]
+  players          Player[]
+  attributeChanges PlayerAttributeChange[]
 
   @@index([userId, lastPlayedAt])
 }
@@ -254,4 +255,28 @@ model HistoricalValuation {
   source   String
 
   @@index([pack, version, playerId])
+}
+
+/// Long-term attribute changes from progression (written by the season loop from Phase 3).
+/// Form and morale never appear here: only bounded development changes do.
+model PlayerAttributeChange {
+  id        Int      @id @default(autoincrement())
+  saveId    String
+  save      SaveGame @relation(fields: [saveId], references: [id], onDelete: Cascade)
+  playerId  Int
+  /// In-game date of the review.
+  date      DateTime @db.Date
+  /// "monthly" | "season"
+  period    String
+  /// Index into engine ATTRIBUTE_KEYS.
+  attribute Int
+  fromValue Int
+  toValue   Int
+  /// growth | decline | training
+  reason    String
+  /// CA before and after the review that made this change.
+  caBefore  Int
+  caAfter   Int
+
+  @@index([saveId, playerId, date])
 }

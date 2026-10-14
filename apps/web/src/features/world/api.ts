@@ -2,6 +2,7 @@ import type {
   ClubCreate,
   PlayerCreate,
   PlayerHistoryDto,
+  PlayerDevelopmentDto,
   ClubDetailDto,
   ClubRefDto,
   ClubSummaryDto,
@@ -178,3 +179,11 @@ export const useCreatePlayer = (saveId: string) =>
   useWorldMutation(saveId, (body: PlayerCreate) =>
     api<PlayerDetailDto>(`${base(saveId)}/players`, { method: 'POST', body }),
   );
+
+export function usePlayerDevelopment(saveId: string, playerId: number) {
+  return useQuery({
+    queryKey: [...worldKey(saveId), 'player', playerId, 'development'],
+    queryFn: ({ signal }) =>
+      api<PlayerDevelopmentDto>(`${base(saveId)}/players/${playerId}/development`, { signal }),
+  });
+}

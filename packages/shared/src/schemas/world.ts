@@ -328,3 +328,19 @@ export const playerCreateSchema = z.object({
   contractEnd: isoDay.optional(),
 });
 export type PlayerCreate = z.input<typeof playerCreateSchema>;
+
+export interface AttributeChangeDto {
+  date: string;
+  period: 'monthly' | 'season';
+  /** Engine attribute key, e.g. "finishing". */
+  attribute: string;
+  from: number;
+  to: number;
+  reason: 'growth' | 'decline' | 'training';
+  caBefore: number;
+  caAfter: number;
+}
+
+export interface PlayerDevelopmentDto {
+  changes: AttributeChangeDto[];
+}
