@@ -39,6 +39,7 @@ _Last updated: 2026-10-14_
 | `npm test`             | ✅ engine 17, shared 6, api 20 (real Postgres), web 3                                                |
 | `npm run test:e2e`     | ✅ 4 Playwright tests (register, validation, full save flow + shell nav + shortcuts, wrong password) |
 | Manual (browser)       | ✅ register, create save, sidebar + keyboard nav, Continue toast, UI kit                             |
+| Clean clone            | ✅ fresh `git clone` → `npm ci` → `npm run dev` (new .env + DB) → health OK, all tests + E2E pass    |
 
 ### Known issues / limitations
 
@@ -56,6 +57,11 @@ _Last updated: 2026-10-14_
   (player database screens).
 - Web bundle is a single 747 kB chunk (219 kB gzip); route-level code splitting planned once
   real screens exist (Phase 4/9).
+- `npm audit`: 4 "high" advisories, all inside the `prisma` **CLI** devDependency
+  (`deepmerge-ts` in its config loader, bundled `mysql2`); not used at runtime. npm's only fix
+  is downgrading to Prisma 6 — revisit when Prisma ships updated deps.
+- On Windows, hard-killing the `npm run dev` parent (Task Manager / tool kill) can orphan the
+  API/Vite children; normal Ctrl+C in a terminal shuts everything down cleanly.
 - No password reset / email verification (no mail service); not in the Phase 0 scope.
 
 ## Next: Phase 1 — Data & world
