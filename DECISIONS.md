@@ -141,3 +141,67 @@ dev DBs are converted with all rows copied and the original kept as a backup dat
 Until Phase 6 adds knowledge levels, star ratings show real CA/PA and the editor shows exact
 numbers. Player search filters by primary position only; matching every playable position
 needs an array-index query or a denormalised column (revisit with the transfer market).
+
+## 2026-10-15 — Phase 1.5: real-world data packs
+
+### D-020 Phase 1.5 inserted before Phase 2
+
+At the user's request the match engine (Phase 2) is paused (groundwork committed) and a
+real-world data pack phase is inserted. The roadmap resumes at Phase 2 afterwards.
+
+### D-021 Data packs: fictional generator + imported, versioned packs
+
+`fictional` stays the default and the only pack fit for publishing. Imported packs are
+built offline by `npm run data:import` into `data-packs/processed/<pack>/<version>.json`
+(version = content hash, so identical inputs give an identical version) and listed by
+`current.json`. Raw files, processed packs, reports, crests and config are gitignored.
+New saves load the processed pack; no source file is parsed at runtime.
+
+### D-022 Saves own a copy of their world; pack history is shared and immutable
+
+Each save inserts its own copy of the pack's world (as fictional saves already did) and
+records `dataPack` + `packVersion`. Re-importing never touches an ongoing career (tested).
+Historical transfers and valuations are large and never change, so they are stored once per
+pack version in `HistoricalTransfer` / `HistoricalValuation`, installed on first use under a
+Postgres advisory lock. In-game transfers will get their own per-save table (Phase 6).
+
+### D-023 Field-level provenance, three entity origins
+
+Players and clubs carry `origin` (generated/imported/custom) and, when imported, a source
+key plus per-field status (`source_backed`, `derived`, `simulated`, `unverified`, `unknown`)
+and one origin letter per attribute (S/F/D). The UI marks derived/simulated/unknown values;
+nothing derived is presented as a real-world fact. Unknown club city/founded stay null.
+
+### D-024 Conservative identity matching
+
+Ratings ↔ Transfermarkt-style players match only on unique exact keys (full name + birth
+date, display name + birth date, surname + birth date + nationality) or manual approval.
+Ambiguous keys merge nothing; fuzzy similarity only produces review candidates. Clubs match
+by player overlap first. Canonical ids persist in an identity map across re-imports.
+
+### D-025 Attribute mapping: linear baseline + one fitted offset; CA stays engine-derived
+
+Each of our attributes has one documented rule (direct, weighted combination, face-stat
+fallback, or seeded derivation). A single offset is fitted so our engine-derived CA tracks
+`(overall − 28) × 2.85`; PA keeps the source's potential headroom. We do not copy the source
+overall into CA (keeps D-015 consistency) and do not claim to reproduce another game's formula.
+
+### D-026 Missing data policy
+
+Never invent real-world facts. Missing contract end/wage/value → `simulated` (labelled);
+missing transfer fee → `unknown` (never 0; a reported 0 is "€0 / free (as reported)");
+missing league country/tier/promotion counts → config or a labelled default with a warning;
+players without nationality or age are dropped and counted. Thin squads and the free-agent
+pool are filled with generated players marked as such.
+
+### D-027 Fitted market value model
+
+A 7-coefficient log-linear model (CA, age, age², upside, contract length, club reputation) is
+fitted by least squares on source-backed values per pack, stored with the pack and the save,
+and used for players without a source value; later for in-game valuations. It is an estimate
+of worth, not an asking price or fee.
+
+### D-028 Synthetic fixtures only in the repo
+
+Tests and the `sample` pack use a generated, entirely fictional dataset in the real formats
+(`data-packs/fixtures/sample`), with planted edge cases. No licensed data is committed.

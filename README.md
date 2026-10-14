@@ -40,6 +40,31 @@ docker compose up -d          # PostgreSQL 18 on localhost:5433 (user/pass/db: u
 Then set `DB_MODE=external` in `.env` and run `npm run dev` as usual. Any PostgreSQL ≥ 14 works;
 point `DATABASE_URL` / `DATABASE_URL_TEST` at it.
 
+## Data packs: fictional or real
+
+A new career starts from a **data pack**:
+
+- **Fictional** (default): invented nations, clubs and players generated from a seed. This is
+  the only pack suitable for anything published.
+- **Real**: real clubs, leagues and players imported locally from dataset files **you**
+  provide. Nothing real ships with the game.
+
+```bash
+npm run data:inspect                     # what's in data-packs/raw/
+npm run data:import -- --pack real       # build the real pack (writes a quality report)
+npm run data:import -- --pack sample     # tiny fictional pack used by tests and demos
+```
+
+See [data-packs/README.md](data-packs/README.md) for where files go,
+[docs/DATA_SOURCES.md](docs/DATA_SOURCES.md), [docs/DATA_MAPPING.md](docs/DATA_MAPPING.md) and
+[docs/DATA_QUALITY.md](docs/DATA_QUALITY.md).
+
+> **Legal notice.** Real names and data come from third-party datasets and are for
+> **personal, non-commercial use only**. Do not redistribute them, the processed packs, or
+> screenshots containing them as part of a product. Licensed data is gitignored and must never
+> be committed. No real badges, kits or photos are included; you may add your own images
+> locally for personal use.
+
 ## Commands
 
 | Command                  | What it does                                                         |
