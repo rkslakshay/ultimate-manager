@@ -8,6 +8,9 @@ import authPlugin from './plugins/auth';
 import { authRoutes } from './routes/auth';
 import { healthRoutes } from './routes/health';
 import { saveRoutes } from './routes/saves';
+import { dataPacksDir } from '@um/data-import';
+import { PackService } from './packs/service';
+import { assetRoutes, packRoutes } from './routes/packs';
 import { editorRoutes } from './world/editor-routes';
 import { worldRoutes } from './world/routes';
 
@@ -37,6 +40,7 @@ export async function buildApp({ config, db }: BuildAppOptions): Promise<Fastify
     trustProxy: true,
   });
 
+  const packs = new PackService(config.DATA_PACKS_DIR ?? dataPacksDir());
   registerErrorHandling(app);
   await app.register(helmet, { contentSecurityPolicy: false });
   // Opt-in per route (auth endpoints set their own limits).
@@ -47,7 +51,9 @@ export async function buildApp({ config, db }: BuildAppOptions): Promise<Fastify
     async (api) => {
       await api.register(healthRoutes, { prefix: '/health', db });
       await api.register(authRoutes, { prefix: '/auth', config, db });
-      await api.register(saveRoutes, { prefix: '/saves', db });
+      await api.register(packRoutes, { prefix: '/packs', packs });
+      await api.register(assetRoutes, { prefix: '/assets', packs });
+      await api.register(saveRoutes, { prefix: '/saves', db, packs });
       await api.register(worldRoutes, { prefix: '/saves/:saveId/world', db });
       await api.register(editorRoutes, { prefix: '/saves/:saveId/world', db });
     },

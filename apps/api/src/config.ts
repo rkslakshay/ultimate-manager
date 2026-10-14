@@ -14,6 +14,8 @@ const envSchema = z
       .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
       .default('info'),
     BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).default(12),
+    /** Root of the data-packs folder (default: <repo>/data-packs). */
+    DATA_PACKS_DIR: z.string().optional(),
     /** Max auth attempts (login/register) per IP per minute. */
     RATE_LIMIT_AUTH_MAX: z.coerce.number().int().min(1).default(20),
   })

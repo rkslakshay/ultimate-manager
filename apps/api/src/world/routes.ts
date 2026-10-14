@@ -4,6 +4,7 @@ import {
   playerSearchQuerySchema,
   type ClubDetailDto,
   type CompetitionDetailDto,
+  type PlayerHistoryDto,
   type PlayerSearchQuery,
   type WorldOverviewDto,
 } from '@um/shared';
@@ -13,7 +14,7 @@ import type { Db } from '../db';
 import type { Prisma, SaveGame } from '../generated/prisma/client';
 import { notFound, parseInput } from '../lib/errors';
 import { idParam, ownedSave, playerContext } from './context';
-import { dateToDay, dayToDate } from './convert';
+import { dateToDay, dayToDate, isoDate } from './convert';
 import {
   squadStats,
   toClubSummary,
@@ -192,6 +193,50 @@ export async function worldRoutes(app: FastifyInstance, { db }: { db: Db }) {
       total,
       query,
     );
+  });
+
+  /** Real-world transfer and market-value history from the save's data pack. */
+  app.get('/players/:id/history', async (request) => {
+    const save = await ownedSave(app, db, request);
+    const { id } = parseInput(idParam, request.params);
+    const player = await db.player.findUnique({
+      where: { saveId_id: { saveId: save.id, id } },
+      select: { id: true, origin: true },
+    });
+    if (!player) throw notFound('Player');
+    const empty: PlayerHistoryDto = {
+      transfers: [],
+      valuations: [],
+      dataPack: save.dataPack,
+      packVersion: save.packVersion,
+    };
+    // Only imported players have real history; generated and custom players never do.
+    if (player.origin !== 'imported' || !save.packVersion) return empty;
+    const where = { pack: save.dataPack, version: save.packVersion, playerId: id };
+    const [transfers, valuations] = await Promise.all([
+      db.historicalTransfer.findMany({ where, orderBy: [{ date: 'desc' }, { id: 'desc' }] }),
+      db.historicalValuation.findMany({ where, orderBy: { date: 'asc' } }),
+    ]);
+    const response: PlayerHistoryDto = {
+      ...empty,
+      transfers: transfers.map((t) => ({
+        date: isoDate(t.date),
+        season: t.season,
+        fromClub: { id: t.fromClubId, name: t.fromClubName },
+        toClub: { id: t.toClubId, name: t.toClubName },
+        feeEur: t.feeEur,
+        feeStatus: t.feeStatus as PlayerHistoryDto['transfers'][number]['feeStatus'],
+        marketValueEur: t.marketValueEur,
+        type: t.type,
+        source: t.source,
+      })),
+      valuations: valuations.map((v) => ({
+        date: isoDate(v.date),
+        valueEur: v.valueEur,
+        source: v.source,
+      })),
+    };
+    return response;
   });
 
   app.get('/players/:id', async (request) => {

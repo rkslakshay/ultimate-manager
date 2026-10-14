@@ -1,4 +1,9 @@
-import { DEFAULT_START_DATE, generateWorld, WORLD_SCHEMA_VERSION } from '@um/engine';
+import {
+  DEFAULT_START_DATE,
+  generateWorld,
+  WORLD_SCHEMA_VERSION,
+  type WorldState,
+} from '@um/engine';
 import {
   MAX_SAVES_PER_USER,
   chooseClubRequestSchema,
@@ -12,6 +17,8 @@ import { z } from 'zod';
 import type { Db } from '../db';
 import type { Prisma, SaveGame } from '../generated/prisma/client';
 import { AppError, notFound, parseInput } from '../lib/errors';
+import { FICTIONAL_PACK, type PackService } from '../packs/service';
+import { dayToDate } from '../world/convert';
 import { insertWorld } from '../world/world-repo';
 
 /** Every new career starts at the beginning of the 2026/27 pre-season. */
@@ -37,22 +44,61 @@ export function toSaveDto(save: SaveGame): SaveGameDto {
   };
 }
 
-/** Generate the save's world from its seed, store it and mark the save as having one. */
-async function createWorld(
+/** The world a new save starts from: generated from its seed, or a copy of an imported pack. */
+interface WorldSource {
+  world: WorldState;
+  packVersion: string | null;
+  valueModel: Prisma.InputJsonValue | undefined;
+}
+
+function worldFor(
+  packs: PackService,
+  dataPack: string,
+  seed: string,
+  packVersion?: string | null,
+): WorldSource {
+  if (dataPack === FICTIONAL_PACK) {
+    // Pure CPU, ~60 ms.
+    return {
+      world: generateWorld(seed, { startDate: CAREER_START_DATE }),
+      packVersion: null,
+      valueModel: undefined,
+    };
+  }
+  const pack = packs.load(dataPack, packVersion ?? undefined);
+  return {
+    world: pack.world,
+    packVersion: pack.version,
+    valueModel: (pack.valueModel?.model ?? undefined) as Prisma.InputJsonValue | undefined,
+  };
+}
+
+/**
+ * Store the save's own copy of its world and mark the save as having one. The save never
+ * references pack data again except the immutable history tables, so re-importing a pack
+ * cannot change an ongoing career.
+ */
+async function storeWorld(
   tx: Prisma.TransactionClient,
   saveId: string,
-  seed: string,
+  source: WorldSource,
 ): Promise<SaveGame> {
-  // Pure CPU (~60 ms) followed by bulk inserts (~250 ms).
-  const world = generateWorld(seed, { startDate: CAREER_START_DATE });
-  await insertWorld(tx, saveId, world);
+  await insertWorld(tx, saveId, source.world);
   return tx.saveGame.update({
     where: { id: saveId },
-    data: { worldVersion: WORLD_SCHEMA_VERSION },
+    data: {
+      worldVersion: WORLD_SCHEMA_VERSION,
+      packVersion: source.packVersion,
+      gameDate: dayToDate(source.world.startDay),
+      ...(source.valueModel ? { valueModel: source.valueModel } : {}),
+    },
   });
 }
 
-export async function saveRoutes(app: FastifyInstance, { db }: { db: Db }) {
+export async function saveRoutes(
+  app: FastifyInstance,
+  { db, packs }: { db: Db; packs: PackService },
+) {
   /** Load a save owned by the current user, or 404 (never reveal other users' saves). */
   async function findOwnedSave(userId: string, rawParams: unknown): Promise<SaveGame> {
     const { saveId } = parseInput(idParamsSchema, rawParams);
@@ -81,6 +127,15 @@ export async function saveRoutes(app: FastifyInstance, { db }: { db: Db }) {
       );
     }
     const seed = input.seed ?? randomBytes(8).toString('hex');
+    const dataPack = input.dataPack ?? FICTIONAL_PACK;
+    if (!packs.has(dataPack)) {
+      throw new AppError('VALIDATION_ERROR', `Data pack "${dataPack}" is not installed`, {
+        dataPack: ['This data pack is not available. Run the importer first.'],
+      });
+    }
+    const started = Date.now();
+    const source = worldFor(packs, dataPack, seed);
+    if (dataPack !== FICTIONAL_PACK) await packs.ensureInstalled(db, packs.load(dataPack));
     const save = await db.$transaction(
       async (tx) => {
         const created = await tx.saveGame.create({
@@ -89,12 +144,17 @@ export async function saveRoutes(app: FastifyInstance, { db }: { db: Db }) {
             name: input.name,
             managerName: input.managerName,
             seed,
-            gameDate: new Date(`${CAREER_START_DATE}T00:00:00Z`),
+            dataPack,
+            gameDate: dayToDate(source.world.startDay),
           },
         });
-        return createWorld(tx, created.id, seed);
+        return storeWorld(tx, created.id, source);
       },
-      { timeout: 60_000, maxWait: 10_000 },
+      { timeout: 120_000, maxWait: 10_000 },
+    );
+    request.log.info(
+      { dataPack, players: source.world.players.length, ms: Date.now() - started },
+      'Created save world',
     );
     return reply.status(201).send(toSaveDto(save));
   });
@@ -120,8 +180,9 @@ export async function saveRoutes(app: FastifyInstance, { db }: { db: Db }) {
     const { userId } = await app.authenticate(request);
     const save = await findOwnedSave(userId, request.params);
     if (save.worldVersion !== null) return toSaveDto(save);
-    const updated = await db.$transaction((tx) => createWorld(tx, save.id, save.seed), {
-      timeout: 60_000,
+    const source = worldFor(packs, save.dataPack, save.seed, save.packVersion);
+    const updated = await db.$transaction((tx) => storeWorld(tx, save.id, source), {
+      timeout: 120_000,
       maxWait: 10_000,
     });
     return toSaveDto(updated);
