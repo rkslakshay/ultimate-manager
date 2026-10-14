@@ -1,0 +1,110 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+
+/*
+ * Design tokens. Tailwind v4 turns these into utilities, e.g. bg-surface, text-fg-muted,
+ * border-border, text-accent, font-sans. See docs/DESIGN_SYSTEM.md for usage rules.
+ */
+@theme {
+  /* Surfaces (darkest -> lightest) */
+  --color-bg: #0b0e13;
+  --color-surface: #11151c;
+  --color-surface-2: #171c25;
+  --color-surface-3: #1e2430;
+  --color-surface-hover: #232a37;
+  --color-border: #262d3a;
+  --color-border-strong: #364052;
+
+  /* Text */
+  --color-fg: #e6e9ef;
+  --color-fg-muted: #a0a9b8;
+  --color-fg-subtle: #8590a3;
+
+  /* Brand accent */
+  --color-accent: #6b5be6; /* solid fills: white text 4.9:1 */
+  --color-accent-hover: #5c4cd6; /* hover darkens to keep contrast */
+  --color-accent-text: #9a8dff; /* accent-coloured text/icons on dark surfaces */
+  --color-accent-muted: #2a2550;
+  --color-accent-fg: #ffffff;
+  --color-ring: #9a8dff;
+
+  /* Status */
+  --color-success: #2fbf71;
+  --color-success-muted: #123526;
+  --color-warning: #e8a33d;
+  --color-warning-muted: #3a2a12;
+  --color-danger: #e5484d; /* text/icons on dark surfaces */
+  --color-danger-solid: #c9353b; /* filled buttons: white text 5.2:1 */
+  --color-danger-solid-hover: #b82f35;
+  --color-danger-muted: #2a1113;
+  --color-info: #3b9eff;
+  --color-info-muted: #11273d;
+
+  /* Player attribute ramp (1-20 scale) */
+  --color-attr-1: #e5484d; /* 1-5   poor */
+  --color-attr-2: #e8833d; /* 6-9   weak */
+  --color-attr-3: #d9c24a; /* 10-12 average */
+  --color-attr-4: #6fcf6a; /* 13-15 good */
+  --color-attr-5: #2fd7a6; /* 16-20 excellent */
+
+  /* Typography: dense UI, 13px body */
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'JetBrains Mono', Menlo, Consolas, monospace;
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.125rem;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.25rem;
+
+  /* Radii */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+
+  /* Layout */
+  --sidebar-width: 13.5rem;
+  --sidebar-width-collapsed: 3.25rem;
+  --topbar-height: 3.25rem;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-bg text-sm text-fg antialiased;
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  /* Numbers line up in tables and stat panels. */
+  table,
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--color-accent-muted);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
