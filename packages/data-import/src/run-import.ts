@@ -9,8 +9,8 @@ import {
   toIsoDate,
   type DayNumber,
 } from '@um/engine';
-import { buildRealWorld, SCALE } from './build';
-import type { BuildContext } from './build/context';
+import { buildRealWorld, SCALE } from './assemble';
+import type { BuildContext } from './assemble/context';
 import { loadImportConfig, toEur, type ImportConfig } from './config';
 import { diffWorlds } from './diff';
 import { IdentityMap } from './identity';
