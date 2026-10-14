@@ -226,6 +226,8 @@ export type WorldImportRequest = z.infer<typeof worldImportRequestSchema>;
 
 export interface WorldImportResult {
   updated: number;
+  /** Rows without an id create new clubs/players. */
+  created: number;
   errors: { row: number; message: string }[];
 }
 
@@ -281,3 +283,48 @@ export interface PlayerHistoryDto {
   dataPack: string;
   packVersion: string | null;
 }
+
+// ---------------------------------------------------------------- Editor: creating entities
+
+const isoDay = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD');
+
+export const clubCreateSchema = z.object({
+  name: z.string().trim().min(1).max(50),
+  shortName: z.string().trim().min(1).max(30).optional(),
+  code: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z0-9]{2,4}$/, '2-4 letters or digits'),
+  city: z.string().trim().min(1).max(40).optional(),
+  primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Use a hex colour like #1d428a'),
+  secondaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Use a hex colour like #1d428a'),
+  /** League (competition id) the club joins. */
+  leagueId: z.coerce.number().int().positive(),
+  reputation: z.coerce.number().int().min(1).max(100).default(40),
+  stadiumName: z.string().trim().min(1).max(60).optional(),
+  stadiumCapacity: z.coerce.number().int().min(500).max(150_000).optional(),
+});
+export type ClubCreate = z.input<typeof clubCreateSchema>;
+
+export const playerCreateSchema = z.object({
+  firstName: z.string().trim().max(30).default(''),
+  lastName: z.string().trim().min(1).max(40),
+  nationId: z.coerce.number().int().positive(),
+  birthDate: isoDay,
+  position: z.enum(POSITIONS),
+  /** null/omitted = free agent. */
+  clubId: z.coerce.number().int().positive().nullable().optional(),
+  /** Exact attributes (engine order). When omitted, a profile is generated for `ability`. */
+  attributes: z.array(z.number().int().min(1).max(20)).length(ATTRIBUTE_COUNT).optional(),
+  /** Target Current Ability (1-200) used when attributes are omitted. */
+  ability: z.coerce.number().int().min(1).max(200).default(100),
+  pa: z.coerce.number().int().min(1).max(200).optional(),
+  foot: z.enum(['left', 'right', 'either']).default('right'),
+  heightCm: z.coerce.number().int().min(150).max(215).default(180),
+  shirtNumber: z.coerce.number().int().min(1).max(99).optional(),
+  /** Weekly wage; defaults to what the club would pay a player of this ability. */
+  wage: z.coerce.number().min(0).optional(),
+  contractEnd: isoDay.optional(),
+});
+export type PlayerCreate = z.input<typeof playerCreateSchema>;

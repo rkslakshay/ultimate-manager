@@ -1,5 +1,9 @@
 import { ageOn, ATTRIBUTE_KEYS, currentAbility, marketValue, type AttributeKey } from '@um/engine';
 import {
+  clubCreateSchema,
+  playerCreateSchema,
+  type ClubCreate,
+  type PlayerCreate,
   clubUpdateSchema,
   parseCsvObjects,
   playerUpdateSchema,
@@ -9,7 +13,8 @@ import {
   type PlayerUpdate,
 } from '@um/shared';
 import type { Db } from '../db';
-import type { Club, Player, Prisma } from '../generated/prisma/client';
+import type { Club, Player, Prisma, SaveGame } from '../generated/prisma/client';
+import { createClub, createPlayer } from './create';
 import { dateToDay } from './convert';
 
 type Tx = Prisma.TransactionClient | Db;
@@ -133,6 +138,7 @@ export async function exportEntity(
 
 export interface ImportOutcome {
   updated: number;
+  created: number;
   errors: { row: number; message: string }[];
 }
 
@@ -153,17 +159,85 @@ const firstIssue = (e: { issues: { path: PropertyKey[]; message: string }[] }) =
   return i ? `${i.path.join('.') || 'row'}: ${i.message}` : 'Invalid row';
 };
 
+const CLUB_CREATE_FIELDS = [
+  'name',
+  'shortName',
+  'code',
+  'city',
+  'primaryColor',
+  'secondaryColor',
+  'leagueId',
+  'reputation',
+  'stadiumName',
+  'stadiumCapacity',
+] as const;
+const PLAYER_CREATE_FIELDS = [
+  'firstName',
+  'lastName',
+  'nationId',
+  'birthDate',
+  'position',
+  'clubId',
+  'ability',
+  'pa',
+  'foot',
+  'heightCm',
+  'shirtNumber',
+  'wage',
+  'contractEnd',
+] as const;
+
+/** Rows without an id describe new entities: validate them for creation. */
+function newEntityInput(
+  entity: ImportEntity,
+  record: Record<string, unknown>,
+): { ok: true; value: ClubCreate | PlayerCreate } | { ok: false; message: string } {
+  if (entity === 'clubs') {
+    const parsed = clubCreateSchema.safeParse(
+      Object.fromEntries(
+        CLUB_CREATE_FIELDS.filter((f) => present(record[f])).map((f) => [f, record[f]]),
+      ),
+    );
+    return parsed.success
+      ? { ok: true, value: parsed.data }
+      : { ok: false, message: firstIssue(parsed.error) };
+  }
+  const attrValues = ATTRIBUTE_KEYS.map((k) => record[k]);
+  const given = attrValues.filter(present).length;
+  if (given && given !== ATTRIBUTE_KEYS.length) {
+    return {
+      ok: false,
+      message: `New players need all ${ATTRIBUTE_KEYS.length} attribute columns or none (got ${given})`,
+    };
+  }
+  const parsed = playerCreateSchema.safeParse({
+    ...Object.fromEntries(
+      PLAYER_CREATE_FIELDS.filter((f) => present(record[f])).map((f) => [f, record[f]]),
+    ),
+    ...(given ? { attributes: attrValues.map((v) => asNumber(v)) } : {}),
+  });
+  return parsed.success
+    ? { ok: true, value: parsed.data }
+    : { ok: false, message: firstIssue(parsed.error) };
+}
+
 export async function importRecords(
   db: Db,
-  saveId: string,
+  save: SaveGame,
   entity: ImportEntity,
   records: Record<string, unknown>[],
-  today: number,
 ): Promise<ImportOutcome> {
+  const saveId = save.id;
+  const today = dateToDay(save.gameDate);
   const errors: ImportOutcome['errors'] = [];
   if (records.length > MAX_IMPORT_ROWS) {
-    return { updated: 0, errors: [{ row: 0, message: `Too many rows (max ${MAX_IMPORT_ROWS})` }] };
+    return {
+      updated: 0,
+      created: 0,
+      errors: [{ row: 0, message: `Too many rows (max ${MAX_IMPORT_ROWS})` }],
+    };
   }
+  const creates: (ClubCreate | PlayerCreate)[] = [];
   const ids = records.map((r) => Number(asNumber(r.id)));
   const existing =
     entity === 'clubs'
@@ -184,6 +258,12 @@ export async function importRecords(
   const playerUpdates: [Player, PlayerUpdate][] = [];
   records.forEach((record, index) => {
     const row = index + 1;
+    if (!present(record.id)) {
+      const input = newEntityInput(entity, record);
+      if (input.ok) creates.push(input.value);
+      else errors.push({ row, message: input.message });
+      return;
+    }
     const id = ids[index]!;
     const target = existing.get(id);
     if (!Number.isInteger(id) || !target) {
@@ -228,8 +308,12 @@ export async function importRecords(
       }
       for (const [player, update] of playerUpdates)
         await updatePlayer(tx, saveId, player, update, today);
+      for (const input of creates) {
+        if (entity === 'clubs') await createClub(tx, save, input as ClubCreate);
+        else await createPlayer(tx, save, input as PlayerCreate);
+      }
     },
     { timeout: 120_000 },
   );
-  return { updated: clubUpdates.length + playerUpdates.length, errors };
+  return { updated: clubUpdates.length + playerUpdates.length, created: creates.length, errors };
 }
