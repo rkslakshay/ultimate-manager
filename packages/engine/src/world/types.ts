@@ -20,6 +20,20 @@ export interface WorldState {
   players: Player[];
 }
 
+/**
+ * Where a value came from. A real player can mix statuses: his name is source-backed while his
+ * hidden attributes are derived. Never label a whole record verified because one field is.
+ */
+export type Provenance = 'source_backed' | 'derived' | 'simulated' | 'unverified' | 'unknown';
+
+/** generated = created by the engine; imported = from a real-world data pack; custom = added in the editor. */
+export type EntityOrigin = 'generated' | 'imported' | 'custom';
+
+export interface NamePool {
+  firstNames: string[];
+  lastNames: string[];
+}
+
 export interface Nation {
   id: number;
   name: string;
@@ -32,6 +46,8 @@ export interface Nation {
   reputation: number;
   /** Has a playable league system in this world. */
   playable: boolean;
+  /** Names for newly generated players (regens) of this nationality; null = use the flavour. */
+  namePool: NamePool | null;
 }
 
 export type CompetitionKind = 'league' | 'cup';
@@ -51,12 +67,14 @@ export interface Competition {
   promotionPlaces: number;
   /** Number of clubs relegated to the tier below (0 for bottom tier). */
   relegationPlaces: number;
+  /** generated, imported (real league), or simulated (e.g. a national cup the data lacks). */
+  origin: EntityOrigin | 'simulated';
 }
 
 export interface Stadium {
   id: number;
   name: string;
-  city: string;
+  city: string | null;
   capacity: number;
 }
 
@@ -67,8 +85,9 @@ export interface Club {
   /** Three-letter code for compact displays. */
   code: string;
   nationId: number;
-  city: string;
-  founded: number;
+  /** null when the data pack doesn't know it. */
+  city: string | null;
+  founded: number | null;
   primaryColor: string;
   secondaryColor: string;
   /** 1-100. */
@@ -85,6 +104,47 @@ export interface Club {
   trainingFacilities: number;
   /** 1-20. */
   youthFacilities: number;
+  origin: EntityOrigin;
+  /** Key of a user-supplied crest image (data-packs/assets/crests/<key>.png), if any. */
+  crestKey: string | null;
+  source: EntitySource<ClubField> | null;
+}
+
+export type ClubField =
+  'name' | 'league' | 'stadium' | 'capacity' | 'colors' | 'reputation' | 'finances' | 'facilities';
+
+export type PlayerField =
+  | 'name'
+  | 'birthDay'
+  | 'nationality'
+  | 'height'
+  | 'weight'
+  | 'foot'
+  | 'positions'
+  | 'traits'
+  | 'club'
+  | 'shirtNumber'
+  | 'contractEnd'
+  | 'contractStart'
+  | 'wage'
+  | 'releaseClause'
+  | 'value'
+  | 'ability';
+
+export interface EntitySource<F extends string> {
+  /** Stable source key, e.g. "ea:20801|tm:8198". */
+  key: string;
+  fields: Partial<Record<F, Provenance>>;
+}
+
+export interface PlayerSource extends EntitySource<PlayerField> {
+  /** Source overall/potential ratings (0-99), kept for future remapping. */
+  overall: number | null;
+  potential: number | null;
+  /** One character per attribute (ATTRIBUTE_KEYS order): S source, F coarse source, D derived. */
+  attributeOrigin: string;
+  /** One character per hidden attribute: S or D. */
+  hiddenOrigin: string;
 }
 
 export type Foot = 'left' | 'right' | 'either';
@@ -132,4 +192,7 @@ export interface Player {
   value: number;
   /** Retired players stay in the world for history. */
   retired: boolean;
+  origin: EntityOrigin;
+  shirtNumber: number | null;
+  source: PlayerSource | null;
 }

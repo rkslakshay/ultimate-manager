@@ -14,7 +14,8 @@ import { CLUB_COLOURS, DEFAULT_NATIONS, DIVISION_NAMES, type NationDefinition } 
 import { generateSquad } from './squads';
 import type { Club, Competition, Nation, Player, Stadium, WorldState } from './types';
 
-export const WORLD_SCHEMA_VERSION = 1;
+/** v2: origins, provenance, shirt numbers, crests, nation name pools, nullable club city/founded. */
+export const WORLD_SCHEMA_VERSION = 2;
 export const DEFAULT_START_DATE = '2026-07-01';
 
 export interface GenerateWorldOptions {
@@ -66,6 +67,7 @@ export function generateWorld(seed: string, options: GenerateWorldOptions = {}):
     flavour: d.flavour,
     reputation: d.reputation,
     playable: d.divisions.length > 0,
+    namePool: null,
   }));
 
   const competitions: Competition[] = [];
@@ -97,6 +99,7 @@ export function generateWorld(seed: string, options: GenerateWorldOptions = {}):
         clubIds: [],
         promotionPlaces: di === 0 ? 0 : 3,
         relegationPlaces: di === def.divisions.length - 1 ? 0 : 3,
+        origin: 'generated',
       };
       competitions.push(league);
       leagueIds.push(league.id);
@@ -133,6 +136,9 @@ export function generateWorld(seed: string, options: GenerateWorldOptions = {}):
           wageBudget: 0,
           trainingFacilities: roundClamp(reputation / 6 + rng.normal(2, 2), 1, 20),
           youthFacilities: roundClamp(reputation / 6 + rng.normal(2, 2.5), 1, 20),
+          origin: 'generated',
+          crestKey: null,
+          source: null,
         };
         clubs.push(club);
         league.clubIds.push(club.id);
@@ -162,6 +168,7 @@ export function generateWorld(seed: string, options: GenerateWorldOptions = {}):
       clubIds: leagueIds.flatMap((id) => competitions.find((c) => c.id === id)!.clubIds),
       promotionPlaces: 0,
       relegationPlaces: 0,
+      origin: 'generated',
     });
   });
 

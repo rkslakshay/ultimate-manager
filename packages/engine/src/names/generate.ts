@@ -1,4 +1,5 @@
 import type { Rng } from '../rng/rng';
+import type { NamePool } from '../world/types';
 import { FLAVOUR_DATA, type NameFlavour, words } from './flavours';
 
 export interface PersonName {
@@ -52,4 +53,24 @@ export function generateClubName(rng: Rng, flavour: NameFlavour, town: string): 
 export function clubCode(town: string): string {
   const letters = town.normalize('NFD').replace(/[^\p{L}]/gu, '');
   return letters.slice(0, 3).toUpperCase();
+}
+
+/**
+ * Name from a nation's own pool (built from that nationality's players in a real data pack).
+ * First and last names are drawn independently, so results are new combinations; a combination
+ * can coincide with a real person, which is why generated players are always marked generated.
+ */
+export function generateNameFromPool(rng: Rng, pool: NamePool): PersonName {
+  return { firstName: rng.pick(pool.firstNames), lastName: rng.pick(pool.lastNames) };
+}
+
+/** Name for a player of a nation: its pool when it has one, otherwise its flavour. */
+export function generateNationName(
+  rng: Rng,
+  nation: { flavour: NameFlavour; namePool: NamePool | null },
+): PersonName {
+  const pool = nation.namePool;
+  return pool && pool.firstNames.length && pool.lastNames.length
+    ? generateNameFromPool(rng, pool)
+    : generatePersonName(rng, nation.flavour);
 }

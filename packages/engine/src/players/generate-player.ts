@@ -1,9 +1,9 @@
 import { type DayNumber, addYears } from '../core/date';
 import { clamp, roundClamp } from '../core/math';
 import type { NameFlavour } from '../names/flavours';
-import { generatePersonName } from '../names/generate';
+import { generateNameFromPool, generatePersonName } from '../names/generate';
 import type { Rng } from '../rng/rng';
-import type { Foot, Player } from '../world/types';
+import type { Foot, NamePool, Player } from '../world/types';
 import { abilityToScore, currentAbility } from './ability';
 import { A, ATTRIBUTE_COUNT, GOALKEEPING, H, HIDDEN_KEYS, MENTAL, TECHNICAL } from './attributes';
 import { P, POSITION_COUNT, POSITION_WEIGHTS, POSITIONS, RELATED_POSITIONS } from './positions';
@@ -20,6 +20,8 @@ export interface PlayerSpec {
   targetCa: number;
   /** Day the age is measured on (career start). */
   referenceDay: DayNumber;
+  /** Draw names from this pool instead of the flavour (real-data nations). */
+  namePool?: NamePool | null;
   /** Chance (0-1) of an exceptional potential, for young players. */
   wonderkidChance?: number;
 }
@@ -147,7 +149,11 @@ function generateHidden(rng: Rng, attrs: readonly number[]): number[] {
 
 /** Generate one player matching the spec. Deterministic for a given RNG state. */
 export function generatePlayer(rng: Rng, spec: PlayerSpec): Player {
-  const { firstName, lastName } = generatePersonName(rng, spec.flavour);
+  const pool = spec.namePool;
+  const { firstName, lastName } =
+    pool && pool.firstNames.length && pool.lastNames.length
+      ? generateNameFromPool(rng, pool)
+      : generatePersonName(rng, spec.flavour);
   const targetCa = clamp(Math.round(spec.targetCa), 20, 195);
   const attributes = generateAttributes(rng, spec.position, targetCa, spec.age);
   const hidden = generateHidden(rng, attributes);
@@ -180,5 +186,8 @@ export function generatePlayer(rng: Rng, spec: PlayerSpec): Player {
     contract: null,
     value: 0,
     retired: false,
+    origin: 'generated',
+    shirtNumber: null,
+    source: null,
   };
 }
