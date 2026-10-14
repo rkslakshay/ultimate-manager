@@ -31,3 +31,8 @@ export {
 } from './world/generate-world';
 export { seasonEndDay, squadAbilityFor } from './world/squads';
 export * from './economy/value-model';
+
+export * from './development/curves';
+export * from './development/progression';
+export * from './development/lifecycle';
+export * from './development/headless';

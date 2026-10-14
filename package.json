@@ -28,7 +28,8 @@
     "prepare": "husky",
     "db:generate": "npm run db:generate --workspace @um/api",
     "data:inspect": "tsx packages/data-import/src/cli.ts inspect",
-    "data:import": "tsx packages/data-import/src/cli.ts import"
+    "data:import": "tsx packages/data-import/src/cli.ts import",
+    "sim:development": "tsx packages/data-import/src/sim-cli.ts"
   },
   "lint-staged": {
     "*.{ts,tsx,js,mjs,cjs}": [
