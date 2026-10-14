@@ -39,8 +39,11 @@ export const saveGameDtoSchema = z.object({
   seed: z.string(),
   /** In-game date as ISO date (YYYY-MM-DD). */
   gameDate: z.string(),
-  /** Club the manager is in charge of; null until a club is chosen (Phase 1+). */
+  /** Club the manager is in charge of; null until a club is chosen. */
   clubName: z.string().nullable(),
+  managerClubId: z.number().int().nullable(),
+  /** False until the save's world has been generated. */
+  hasWorld: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string(),
   lastPlayedAt: z.string(),

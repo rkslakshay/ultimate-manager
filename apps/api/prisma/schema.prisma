@@ -37,20 +37,147 @@ model Session {
 }
 
 model SaveGame {
-  id           String   @id @default(cuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name         String
-  managerName  String
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  managerName   String
   /// World seed: the whole world is generated and simulated deterministically from it.
-  seed         String
+  seed          String
   /// Current in-game date.
-  gameDate     DateTime @db.Date
+  gameDate      DateTime @db.Date
   /// Denormalised display name of the managed club (null until a club is chosen).
-  clubName     String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  lastPlayedAt DateTime @default(now())
+  clubName      String?
+  /// Club the user manages (null until chosen).
+  managerClubId Int?
+  /// WorldState schema version of the generated world (null = no world generated yet).
+  worldVersion  Int?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lastPlayedAt  DateTime @default(now())
+
+  nations      Nation[]
+  competitions Competition[]
+  stadiums     Stadium[]
+  clubs        Club[]
+  players      Player[]
 
   @@index([userId, lastPlayedAt])
+}
+
+// ---------------------------------------------------------------------------
+// Game world. Every table is scoped to a save and keyed by (saveId, id), where id is the
+// engine's integer id. Rows are written in bulk from the engine's WorldState; integrity
+// between world tables is maintained by the engine (no cross-table FKs, which keeps bulk
+// writes simple and fast). Deleting a save cascades to its whole world.
+// ---------------------------------------------------------------------------
+
+model Nation {
+  saveId     String
+  id         Int
+  save       SaveGame @relation(fields: [saveId], references: [id], onDelete: Cascade)
+  name       String
+  adjective  String
+  code       String
+  flavour    String
+  reputation Int
+  playable   Boolean
+
+  @@id([saveId, id])
+}
+
+model Competition {
+  saveId           String
+  id               Int
+  save             SaveGame @relation(fields: [saveId], references: [id], onDelete: Cascade)
+  nationId         Int
+  name             String
+  shortName        String
+  /// "league" | "cup"
+  kind             String
+  tier             Int?
+  reputation       Int
+  clubIds          Int[]
+  promotionPlaces  Int
+  relegationPlaces Int
+
+  @@id([saveId, id])
+}
+
+model Stadium {
+  saveId   String
+  id       Int
+  save     SaveGame @relation(fields: [saveId], references: [id], onDelete: Cascade)
+  name     String
+  city     String
+  capacity Int
+
+  @@id([saveId, id])
+}
+
+model Club {
+  saveId             String
+  id                 Int
+  save               SaveGame @relation(fields: [saveId], references: [id], onDelete: Cascade)
+  name               String
+  shortName          String
+  code               String
+  nationId           Int
+  city               String
+  founded            Int
+  primaryColor       String
+  secondaryColor     String
+  reputation         Int
+  stadiumId          Int
+  leagueId           Int?
+  balance            Float
+  transferBudget     Float
+  /// Weekly wage budget.
+  wageBudget         Float
+  trainingFacilities Int
+  youthFacilities    Int
+
+  @@id([saveId, id])
+  @@index([saveId, leagueId])
+}
+
+model Player {
+  saveId          String
+  id              Int
+  save            SaveGame  @relation(fields: [saveId], references: [id], onDelete: Cascade)
+  firstName       String
+  lastName        String
+  nationId        Int
+  birthDate       DateTime  @db.Date
+  heightCm        Int
+  weightKg        Int
+  /// "left" | "right" | "either"
+  foot            String
+  weakFoot        Int
+  /// 1-20 values in engine ATTRIBUTE_KEYS order.
+  attributes      Int[]
+  /// 1-20 values in engine HIDDEN_KEYS order.
+  hidden          Int[]
+  /// Familiarity 1-20 per engine POSITIONS slot.
+  positions       Int[]
+  primaryPosition Int
+  ca              Int
+  pa              Int
+  traits          String[]
+  clubId          Int?
+  /// Contract (all null for free agents). Wage is weekly.
+  wage            Float?
+  contractStart   DateTime? @db.Date
+  contractEnd     DateTime? @db.Date
+  squadStatus     String?
+  releaseClause   Float?
+  value           Float
+  retired         Boolean   @default(false)
+
+  @@id([saveId, id])
+  @@index([saveId, clubId])
+  @@index([saveId, ca])
+  @@index([saveId, value])
+  @@index([saveId, primaryPosition])
+  @@index([saveId, lastName])
 }

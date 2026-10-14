@@ -1,5 +1,7 @@
+import { DEFAULT_START_DATE, generateWorld, WORLD_SCHEMA_VERSION } from '@um/engine';
 import {
   MAX_SAVES_PER_USER,
+  chooseClubRequestSchema,
   createSaveRequestSchema,
   updateSaveRequestSchema,
   type SaveGameDto,
@@ -10,9 +12,10 @@ import { z } from 'zod';
 import type { Db } from '../db';
 import type { SaveGame } from '../generated/prisma/client';
 import { AppError, notFound, parseInput } from '../lib/errors';
+import { insertWorld } from '../world/world-repo';
 
 /** Every new career starts at the beginning of the 2026/27 pre-season. */
-export const CAREER_START_DATE = '2026-07-01';
+export const CAREER_START_DATE = DEFAULT_START_DATE;
 
 const idParamsSchema = z.object({ id: z.string().min(1).max(64) });
 
@@ -24,6 +27,8 @@ export function toSaveDto(save: SaveGame): SaveGameDto {
     seed: save.seed,
     gameDate: save.gameDate.toISOString().slice(0, 10),
     clubName: save.clubName,
+    managerClubId: save.managerClubId,
+    hasWorld: save.worldVersion !== null,
     createdAt: save.createdAt.toISOString(),
     updatedAt: save.updatedAt.toISOString(),
     lastPlayedAt: save.lastPlayedAt.toISOString(),
@@ -58,15 +63,26 @@ export async function saveRoutes(app: FastifyInstance, { db }: { db: Db }) {
         `You can have at most ${MAX_SAVES_PER_USER} save games. Delete one to start another.`,
       );
     }
-    const save = await db.saveGame.create({
-      data: {
-        userId,
-        name: input.name,
-        managerName: input.managerName,
-        seed: input.seed ?? randomBytes(8).toString('hex'),
-        gameDate: new Date(`${CAREER_START_DATE}T00:00:00Z`),
+    const seed = input.seed ?? randomBytes(8).toString('hex');
+    // Generating is pure CPU (~60 ms); do it before opening the transaction.
+    const world = generateWorld(seed, { startDate: CAREER_START_DATE });
+    const save = await db.$transaction(
+      async (tx) => {
+        const created = await tx.saveGame.create({
+          data: {
+            userId,
+            name: input.name,
+            managerName: input.managerName,
+            seed,
+            gameDate: new Date(`${CAREER_START_DATE}T00:00:00Z`),
+            worldVersion: WORLD_SCHEMA_VERSION,
+          },
+        });
+        await insertWorld(tx, created.id, world);
+        return created;
       },
-    });
+      { timeout: 60_000, maxWait: 10_000 },
+    );
     return reply.status(201).send(toSaveDto(save));
   });
 
@@ -82,6 +98,25 @@ export async function saveRoutes(app: FastifyInstance, { db }: { db: Db }) {
     const updated = await db.saveGame.update({
       where: { id: save.id },
       data: { lastPlayedAt: new Date() },
+    });
+    return toSaveDto(updated);
+  });
+
+  /** Take charge of a club. Allowed once, while the manager is unemployed. */
+  app.post('/:id/club', async (request) => {
+    const { userId } = await app.authenticate(request);
+    const save = await findOwnedSave(userId, request.params);
+    const { clubId } = parseInput(chooseClubRequestSchema, request.body);
+    if (save.managerClubId !== null) {
+      throw new AppError('CONFLICT', 'You already manage a club in this save');
+    }
+    const club = await db.club.findUnique({
+      where: { saveId_id: { saveId: save.id, id: clubId } },
+    });
+    if (!club || club.leagueId === null) throw notFound('Club');
+    const updated = await db.saveGame.update({
+      where: { id: save.id },
+      data: { managerClubId: club.id, clubName: club.name },
     });
     return toSaveDto(updated);
   });
