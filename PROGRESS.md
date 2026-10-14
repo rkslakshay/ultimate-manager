@@ -2,81 +2,90 @@
 
 _Last updated: 2026-10-14_
 
-## Current phase: Phase 0 — Foundation ✅ complete
+Plan for all phases: [docs/ROADMAP.md](docs/ROADMAP.md). Reasoning: [DECISIONS.md](DECISIONS.md).
+
+| Phase            | Status         |
+| ---------------- | -------------- |
+| 0 — Foundation   | ✅ complete    |
+| 1 — Data & world | ✅ complete    |
+| 2 — Match engine | 🔨 in progress |
+| 3 — Season loop  | ⏳ next        |
+| 4–9              | not started    |
+
+---
+
+## Phase 1 — Data & world ✅
 
 ### Done
 
-- **Monorepo** (npm workspaces): `apps/web`, `apps/api`, `packages/engine`, `packages/shared`;
-  strict TypeScript 6 everywhere (`strict`, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`).
-- **Tooling**: ESLint 9 flat config (typescript-eslint, react-hooks, engine purity rules),
-  Prettier, Husky pre-commit (lint-staged + full typecheck), GitHub Actions CI (format, lint,
-  typecheck, unit/integration tests against a Postgres service, web build, Playwright E2E).
-- **Database**: PostgreSQL via Prisma 7 (`pg` adapter). Migration `init`: `User`, `Session`,
-  `SaveGame`. Embedded PostgreSQL for zero-install local dev; `docker-compose.yml` alternative.
-- **One-command dev**: `npm run dev` → `.env` bootstrap, DB start, migrate, generate, API + web.
-- **API** (Fastify 5): `/api/health` (DB check, 503 when down), auth (register / login / logout /
-  me) with bcrypt, JWT httpOnly cookie + revocable DB sessions, per-IP rate limit on auth routes,
-  save games CRUD (+ load, max 10 per user, ownership enforced as 404), consistent error bodies,
-  helmet, env validation (rejects dev JWT secret in production).
-- **Shared**: Zod schemas for auth, saves, errors, pagination, health; navigation sections.
-- **Engine**: seeded RNG (SFC32), string/number seeds, int/float/chance/normal/weighted/pick/
-  shuffle, forkable sub-streams, exact state save/restore, pinned reference sequence.
-- **Web**: dark FM-style design system (tokens, WCAG-AA-checked colours), components (Button,
-  Card, DataTable, Tabs, Dialog, DropdownMenu, Input/FormField, Badge/Kbd, Skeleton), auth
-  pages with client + server validation, saves screen (create / load / optimistic rename +
-  delete), game shell (collapsible sidebar with 11 sections, top bar with club, date, Continue),
-  routed placeholder pages labelled with their delivery phase, keyboard shortcuts
-  (`Space`, `g`+key, `?`, `[`), UI kit page, 404 page, session-expiry handling.
-- **Docs**: README (setup, commands, API, troubleshooting), DECISIONS, design system.
+- **Engine — player model:** 47 attributes (technical, mental, physical, goalkeeping) + 11 hidden,
+  14 positions with familiarity, Current/Potential Ability (CA derived from attributes through
+  per-position weights), 1-20 position ratings, star ratings, 18 traits, market value and wage
+  models. Pure civil-date arithmetic (the engine may not use `Date`).
+- **Engine — world generator:** `generateWorld(seed)` builds 9 fictional nations (3 playable
+  with two divisions: 20/20, 18/20, 16/18 → 112 clubs), national cups, stadiums, finances,
+  facilities, squads of 24-28 by tier (key/starter/rotation/backup/prospect), contracts, and
+  ~3,200 players including free agents — in ~60 ms. Name pools for 8 naming styles: common first
+  names plus generated surnames, towns and club names (no real people, clubs or crests).
+- **Database:** world tables per save keyed by `(saveId, id)`, cascade delete, search indexes.
+  Worlds are generated and stored when a save is created (~250 ms insert via
+  `jsonb_to_recordset`) and round-trip exactly (`WorldState` → DB → `WorldState`).
+- **API:** world overview, competitions, clubs, club detail with squad, player detail, paginated
+  player search (name, position, nation, club, age, ability, value, free agents, expiring
+  contracts; sortable), choose-club, database editor (edit clubs/players with CA and value
+  recomputed by the engine; JSON/CSV export and import with per-row errors), world generation
+  for saves made before worlds existed.
+- **Web:** choose-your-club, club page, squad, player profile (attribute colour ramp, positions
+  pitch map, position ratings, contract, traits), league browser, player search (server-side
+  filtering/sorting/paging), database editor (club and player dialogs, import/export), real club
+  badge in the top bar.
+- **Fixed along the way:** embedded Postgres on Windows created WIN1252 databases (could not
+  store "ć"). New clusters/databases are UTF-8; the existing dev database was converted in place
+  with every row kept (verified identical) and the original kept as a backup database.
 
-### Verification (run on Windows 11, Node 24.19)
+### Verification
 
-| Check                  | Result                                                                                               |
-| ---------------------- | ---------------------------------------------------------------------------------------------------- |
-| `npm run typecheck`    | ✅ all 4 workspaces                                                                                  |
-| `npm run lint`         | ✅ 0 errors, 0 warnings                                                                              |
-| `npm run format:check` | ✅                                                                                                   |
-| `npm test`             | ✅ engine 17, shared 6, api 20 (real Postgres), web 3                                                |
-| `npm run test:e2e`     | ✅ 4 Playwright tests (register, validation, full save flow + shell nav + shortcuts, wrong password) |
-| Manual (browser)       | ✅ register, create save, sidebar + keyboard nav, Continue toast, UI kit                             |
-| Clean clone            | ✅ fresh `git clone` → `npm ci` → `npm run dev` (new .env + DB) → health OK, all tests + E2E pass    |
-| GitHub Actions CI      | ✅ first run green on Linux (Postgres service, tests, build, E2E)                                    |
+| Check                  | Result                                                                                            |
+| ---------------------- | ------------------------------------------------------------------------------------------------- |
+| typecheck / lint / fmt | ✅                                                                                                |
+| `npm test`             | ✅ engine 32, shared 9, api 32 (real Postgres), web 3                                             |
+| `npm run test:e2e`     | ✅ 6 Playwright tests incl. choose club → club → squad → player → league → search → editor rename |
+| Manual                 | ✅ legacy save opened → world generated → redirected to choose-club                               |
 
-### Known issues / limitations
+### Known issues / simplifications
 
-- Docker Compose file is untested locally (Docker not installed on the dev machine); CI uses the
-  same image via a service container.
-- Embedded PostgreSQL was only exercised on Windows. macOS/Linux depend on its install script
-  (allow-listed) — fall back to Docker if it fails.
-- The first visit logs one expected `401` from `/api/auth/me` in the browser console (signed-out
-  check).
-- Placeholder screens: every game section except the shell itself — each states its phase.
-- `Continue` shows a toast only — `TODO(phase-3)` in `GameLayout.tsx`.
-- Club info in the top bar is "No club" until the world exists — `TODO(phase-1)` in `TopBar.tsx`.
-- DataTable paginates client-side; virtualisation for thousands of rows is planned for Phase 1
-  (player database screens).
-- Web bundle is a single 747 kB chunk (219 kB gzip); route-level code splitting planned once
-  real screens exist (Phase 4/9).
-- `npm audit`: 4 "high" advisories, all inside the `prisma` **CLI** devDependency
-  (`deepmerge-ts` in its config loader, bundled `mysql2`); not used at runtime. npm's only fix
-  is downgrading to Prisma 6 — revisit when Prisma ships updated deps. **Do not run `npm audit fix --force`**:
-  it downgrades the CLI to 6.x and `npm run dev` then fails with P1012 (the dev scripts now detect
-  the CLI/client mismatch and explain the fix).
-- On Windows, hard-killing the `npm run dev` parent (Task Manager / tool kill) can orphan the
-  API/Vite children; normal Ctrl+C in a terminal shuts everything down cleanly.
-- No password reset / email verification (no mail service); not in the Phase 0 scope.
+- **Abilities are visible** as stars (and exact CA/PA in the editor). Scouting knowledge that
+  masks attributes arrives in Phase 6 (`TODO(phase-6)`).
+- Stars are absolute (CA/40), not relative to the viewer's squad as in FM.
+- Player search filters on **primary** position only (not every position a player can play).
+- Import edits existing clubs/players only; it can't add new leagues, clubs or players yet.
+- League tables show zeros in predicted order until fixtures exist (Phase 3).
+- Squad lists use client-side tables (≤ 30 rows); the 3,000+ player search uses server
+  pagination instead of a virtualised list.
+- Staff are not generated yet (Phase 5).
+- Club codes can repeat between clubs (e.g. two "VAL"); they're display-only.
 
-## Next: Phase 1 — Data & world
+---
 
-Full plan for all remaining phases: [docs/ROADMAP.md](docs/ROADMAP.md). Phase 1 outline:
+## Phase 0 — Foundation ✅
 
-1. Prisma schema for the world, scoped per save game: `Nation`, `League` (+ divisions),
-   `Club`, `Stadium`, `Player` (attributes, hidden attributes, CA/PA, positions, traits, contract),
-   `Staff` (stub). Indexes for player search and club lookups.
-2. Engine: name pools per fictional nation, world generator (≥3 countries × 2 divisions,
-   16–20 clubs, ~3,000+ players) driven by the save seed; ability/age/position distributions;
-   CA/PA model and position role ratings; star ratings; wages/values/contracts.
-3. Persist a generated world when a save is created (bulk insert), "choose your club" step.
-4. Browsing screens: league tables (pre-season zeros), club pages, player profiles,
-   virtualised player search; database editor + JSON/CSV import (basic).
-5. Tests: generator determinism and distribution checks; API integration tests.
+Monorepo (npm workspaces, strict TS 6), ESLint/Prettier/Husky/CI, embedded Postgres + Prisma 7,
+one-command `npm run dev`, Fastify API with cookie-JWT auth and revocable sessions, save games
+CRUD, seeded RNG, dark FM-style design system and app shell, Playwright E2E. Verified on a
+clean clone and in GitHub Actions.
+
+---
+
+## Standing known issues
+
+- Docker Compose is untested locally (no Docker on the dev machine); CI uses the same image.
+- Embedded Postgres was only exercised on Windows; macOS/Linux rely on its (allow-listed)
+  install script — use Docker with `DB_MODE=external` if it fails.
+- First visit logs one expected `401` from `/api/auth/me` (signed-out check).
+- `Continue` only shows a toast — `TODO(phase-3)` in `GameLayout.tsx`.
+- Web bundle is one ~750 kB chunk (~220 kB gzip); route-level code splitting in Phase 4/9.
+- `npm audit`: 4 "high" advisories inside the `prisma` **CLI** devDependency only.
+  **Do not run `npm audit fix --force`** — it downgrades the CLI to 6.x and `npm run dev` fails
+  with P1012 (the dev scripts detect the mismatch and explain the fix).
+- On Windows, hard-killing the `npm run dev` parent can orphan API/Vite children; Ctrl+C is clean.
+- No password reset / email verification.

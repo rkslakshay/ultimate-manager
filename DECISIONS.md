@@ -95,3 +95,49 @@ macOS/Linux) and `esbuild` (binary check). Note this overrides any user-level `a
 `scripts/dev.mjs` must sequence DB start → migrate → generate → servers, and stop the embedded
 database cleanly on Ctrl+C. A ~100-line script does this with prefixed output and no extra
 dependency. Processes are spawned via `node` directly (no shell) to avoid Node's DEP0190.
+
+## 2026-10-14 — Phase 1
+
+### D-013 World storage: per-save tables, composite keys, no cross-table FKs
+
+Every world table is keyed by `(saveId, id)` where `id` is the engine's small integer id, with
+`ON DELETE CASCADE` from `SaveGame`. There are deliberately no foreign keys _between_ world
+tables: the engine guarantees integrity, and FK-free tables make the bulk writes of the season
+loop (Phase 3) simple and fast. Attributes/hidden/positions are `int[]` columns (compact, still
+queryable with `attributes[i]`); searchable fields (CA, value, position, club, name) get indexes.
+
+### D-014 Bulk inserts via `jsonb_to_recordset`
+
+Prisma `createMany` binds ~27 parameters per player and took 1.2-2.9 s per world. One
+`INSERT … SELECT FROM jsonb_to_recordset($json)` per batch takes ~230 ms. Postgres converts
+JSON arrays to `int[]` natively. The same technique will serve the Phase 3 diff flush.
+
+### D-015 Current Ability is derived, not rolled
+
+CA is a pure function of attributes and primary position (per-position weights → weighted
+1-20 score → 1-200). Generation targets a CA and nudges attributes until they match, and any
+edit or (later) development recomputes CA. This keeps CA, ratings and attributes consistent.
+Stars = CA/40 (absolute), a simplification of FM's squad-relative stars.
+
+### D-016 Names: common first names, generated surnames and places
+
+Given names come from common per-style lists; surnames, towns and clubs are built from
+morphemes, so full names are invented combinations. 8 naming styles cover 9 fictional nations.
+
+### D-017 The engine has no `Date`
+
+Game dates are integer day numbers with Hinnant's civil-date algorithms (exhaustively tested
+1800-2200). This removes host time-zone effects from simulation; ISO strings only at the edges.
+
+### D-018 UTF-8 everywhere for Postgres
+
+initdb on Windows inherits the system code page (WIN1252 here), which cannot store many
+generated names. Clusters are initialised `--encoding=UTF8 --locale=C`, databases are always
+created `ENCODING 'UTF8' TEMPLATE template0`, test DBs with another encoding are recreated, and
+dev DBs are converted with all rows copied and the original kept as a backup database.
+
+### D-019 Abilities visible until scouting exists
+
+Until Phase 6 adds knowledge levels, star ratings show real CA/PA and the editor shows exact
+numbers. Player search filters by primary position only; matching every playable position
+needs an array-index query or a denormalised column (revisit with the transfer market).
