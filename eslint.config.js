@@ -39,6 +39,7 @@ export default tseslint.config(
   // Engine must stay framework- and platform-free.
   {
     files: ['packages/engine/src/**/*.ts'],
+    ignores: ['**/*.test.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
