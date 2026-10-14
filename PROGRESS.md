@@ -68,7 +68,7 @@ _Last updated: 2026-10-14_
 
 ## Next: Phase 1 — Data & world
 
-See the plan at the bottom of the Phase 0 summary in the conversation / below.
+Full plan for all remaining phases: [docs/ROADMAP.md](docs/ROADMAP.md). Phase 1 outline:
 
 1. Prisma schema for the world, scoped per save game: `Nation`, `League` (+ divisions),
    `Club`, `Stadium`, `Player` (attributes, hidden attributes, CA/PA, positions, traits, contract),

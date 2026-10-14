@@ -4,7 +4,8 @@ A deep, text-and-data-driven football management simulation for the browser, ins
 Football Manager. All clubs, players and competitions are fictional.
 
 > **Status:** Phase 0 (foundation) complete. See [PROGRESS.md](PROGRESS.md) for what works today
-> and [DECISIONS.md](DECISIONS.md) for the reasoning behind technical choices.
+> [DECISIONS.md](DECISIONS.md) for the reasoning behind technical choices, and
+> [docs/ROADMAP.md](docs/ROADMAP.md) for the plan for Phases 1–9.
 
 ## Quick start
 
