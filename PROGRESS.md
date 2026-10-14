@@ -59,7 +59,9 @@ _Last updated: 2026-10-14_
   real screens exist (Phase 4/9).
 - `npm audit`: 4 "high" advisories, all inside the `prisma` **CLI** devDependency
   (`deepmerge-ts` in its config loader, bundled `mysql2`); not used at runtime. npm's only fix
-  is downgrading to Prisma 6 — revisit when Prisma ships updated deps.
+  is downgrading to Prisma 6 — revisit when Prisma ships updated deps. **Do not run `npm audit fix --force`**:
+  it downgrades the CLI to 6.x and `npm run dev` then fails with P1012 (the dev scripts now detect
+  the CLI/client mismatch and explain the fix).
 - On Windows, hard-killing the `npm run dev` parent (Task Manager / tool kill) can orphan the
   API/Vite children; normal Ctrl+C in a terminal shuts everything down cleanly.
 - No password reset / email verification (no mail service); not in the Phase 0 scope.

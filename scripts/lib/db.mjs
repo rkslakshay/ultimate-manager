@@ -110,10 +110,31 @@ export function migrateDeploy(url) {
   return runPrisma(['migrate', 'deploy'], url);
 }
 
+/**
+ * The Prisma CLI and client must share a major version: Prisma 7 reads the datasource URL from
+ * prisma.config.ts, while a Prisma 6 CLI expects it in schema.prisma and fails with P1012.
+ * (`npm audit fix --force` currently downgrades the CLI to 6.x, which causes exactly that.)
+ */
+export function assertPrismaVersionsMatch(require) {
+  const version = (pkg) =>
+    JSON.parse(fs.readFileSync(require.resolve(`${pkg}/package.json`), 'utf8')).version;
+  const cli = version('prisma');
+  const client = version('@prisma/client');
+  if (cli.split('.')[0] !== client.split('.')[0]) {
+    throw new Error(
+      `Prisma version mismatch: prisma CLI ${cli} vs @prisma/client ${client}.\n` +
+        'They must share a major version (this project uses Prisma 7). Restore the versions in\n' +
+        'apps/api/package.json (git checkout -- apps/api/package.json package-lock.json) and run\n' +
+        '`npm install`. Avoid `npm audit fix --force`, which downgrades the Prisma CLI.',
+    );
+  }
+}
+
 export function runPrisma(args, url) {
   return new Promise((resolve, reject) => {
     const apiDir = path.join(ROOT, 'apps', 'api');
     const require = createRequire(path.join(apiDir, 'package.json'));
+    assertPrismaVersionsMatch(require);
     const prismaCli = path.join(
       path.dirname(require.resolve('prisma/package.json')),
       'build',

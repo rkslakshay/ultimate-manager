@@ -115,5 +115,11 @@ shortcut list · `[` collapse the sidebar.
   delete `.data/postgres/postmaster.pid`. To start completely fresh, delete `.data/`.
 - **macOS/Linux: embedded Postgres fails with missing libraries** — make sure install scripts
   ran (`npm rebuild @embedded-postgres/<platform>`), or use Docker with `DB_MODE=external`.
+- **Prisma error P1012 "The datasource property `url` is no longer supported" / "url argument is
+  missing"** — the Prisma CLI and `@prisma/client` are on different major versions (usually after
+  `npm audit fix --force`, which downgrades the CLI to 6.x). This project uses Prisma 7, where the
+  URL lives in `apps/api/prisma.config.ts`, not in `schema.prisma`. Restore the versions with
+  `git checkout -- apps/api/package.json package-lock.json` and run `npm install`.
+  `npm run dev` now detects the mismatch and prints this advice.
 - **`npm install` warns about install scripts** — the project allow-lists the few packages that
   need them in `package.json#allowScripts` (Prisma engines, embedded Postgres, esbuild).

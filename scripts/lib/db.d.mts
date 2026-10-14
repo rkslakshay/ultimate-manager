@@ -11,3 +11,4 @@ export function ensurePostgres(url: string, mode?: string): Promise<(() => Promi
 export function ensureDatabase(url: string): Promise<void>;
 export function migrateDeploy(url: string): Promise<string>;
 export function runPrisma(args: string[], url: string): Promise<string>;
+export function assertPrismaVersionsMatch(require: NodeJS.Require): void;
