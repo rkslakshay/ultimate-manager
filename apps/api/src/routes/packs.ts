@@ -27,6 +27,18 @@ const crestParams = z.object({ key: z.string().regex(/^[a-z0-9-]{1,80}$/) });
  * data-packs/assets/crests/<key>.(png|svg|jpg|webp). No images ship with the game.
  */
 export async function assetRoutes(app: FastifyInstance, { packs }: { packs: PackService }) {
+  /** Which crest keys have an image, so the UI only requests images that exist. */
+  app.get('/crests', async (request) => {
+    await app.authenticate(request);
+    if (!fs.existsSync(packs.crestsDir)) return { keys: [] };
+    const keys = fs
+      .readdirSync(packs.crestsDir)
+      .map((f) => path.parse(f))
+      .filter((p) => CREST_TYPES[p.ext.toLowerCase()] && /^[a-z0-9-]{1,80}$/.test(p.name))
+      .map((p) => p.name);
+    return { keys: [...new Set(keys)].sort() };
+  });
+
   app.get('/crests/:key', async (request, reply) => {
     const { key } = parseInput(crestParams, request.params);
     for (const [ext, type] of Object.entries(CREST_TYPES)) {

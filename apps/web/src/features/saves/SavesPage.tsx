@@ -45,6 +45,16 @@ export function SavesPage() {
       },
       { accessorKey: 'managerName', header: 'Manager' },
       {
+        accessorKey: 'dataPack',
+        header: 'World',
+        cell: ({ getValue }) =>
+          getValue<string>() === 'fictional' ? (
+            'Fictional'
+          ) : (
+            <Badge tone="success">{getValue<string>()}</Badge>
+          ),
+      },
+      {
         accessorKey: 'clubName',
         header: 'Club',
         cell: ({ getValue }) =>

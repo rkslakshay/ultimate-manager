@@ -1,4 +1,7 @@
 import type {
+  ClubCreate,
+  PlayerCreate,
+  PlayerHistoryDto,
   ClubDetailDto,
   ClubRefDto,
   ClubSummaryDto,
@@ -155,3 +158,23 @@ export async function downloadExport(
   link.click();
   URL.revokeObjectURL(url);
 }
+
+export function usePlayerHistory(saveId: string, playerId: number, enabled = true) {
+  return useQuery({
+    queryKey: [...worldKey(saveId), 'player', playerId, 'history'],
+    queryFn: ({ signal }) =>
+      api<PlayerHistoryDto>(`${base(saveId)}/players/${playerId}/history`, { signal }),
+    enabled,
+    staleTime: Infinity,
+  });
+}
+
+export const useCreateClub = (saveId: string) =>
+  useWorldMutation(saveId, (body: ClubCreate) =>
+    api<ClubRefDto>(`${base(saveId)}/clubs`, { method: 'POST', body }),
+  );
+
+export const useCreatePlayer = (saveId: string) =>
+  useWorldMutation(saveId, (body: PlayerCreate) =>
+    api<PlayerDetailDto>(`${base(saveId)}/players`, { method: 'POST', body }),
+  );

@@ -1,6 +1,6 @@
 import type { ClubSummaryDto, PlayerSummaryDto } from '@um/shared';
 import type { ColumnDef } from '@tanstack/react-table';
-import { Pencil } from 'lucide-react';
+import { Pencil, Plus } from 'lucide-react';
 import { useDeferredValue, useMemo, useState } from 'react';
 import { ClubBadge } from '@/components/game/ClubBadge';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { fullName } from '@/lib/game-format';
 import { useGameSave } from '../game/useGameSave';
 import { useLeagueClubs, usePlayerSearch } from '../world/api';
+import { AddClubDialog, AddPlayerDialog } from './AddDialogs';
 import { ClubEditDialog } from './ClubEditDialog';
 import { ImportExportPanel } from './ImportExportPanel';
 import { PlayerEditDialog } from './PlayerEditDialog';
@@ -28,6 +29,7 @@ export function EditorPage() {
   const clubs = useLeagueClubs(save.id);
   const [club, setClub] = useState<ClubSummaryDto | null>(null);
   const [playerId, setPlayerId] = useState<number | null>(null);
+  const [adding, setAdding] = useState<'club' | 'player' | null>(null);
   const [q, setQ] = useState('');
   const deferredQ = useDeferredValue(q);
   const players = usePlayerSearch(save.id, {
@@ -115,6 +117,11 @@ export function EditorPage() {
                 searchPlaceholder="Filter clubs…"
                 pageSize={20}
                 getRowId={(c) => String(c.id)}
+                toolbar={
+                  <Button size="sm" variant="primary" onClick={() => setAdding('club')}>
+                    <Plus /> Add club
+                  </Button>
+                }
               />
             </CardContent>
           </Card>
@@ -123,6 +130,9 @@ export function EditorPage() {
           <Card>
             <CardHeader>
               <CardTitle>Find a player</CardTitle>
+              <Button size="sm" variant="primary" onClick={() => setAdding('player')}>
+                <Plus /> Add player
+              </Button>
               <Input
                 className="max-w-64"
                 aria-label="Search players by name"
@@ -149,6 +159,10 @@ export function EditorPage() {
 
       <Dialog open={club !== null} onOpenChange={(open) => !open && setClub(null)}>
         {club && <ClubEditDialog saveId={save.id} club={club} onDone={() => setClub(null)} />}
+      </Dialog>
+      <Dialog open={adding !== null} onOpenChange={(open) => !open && setAdding(null)}>
+        {adding === 'club' && <AddClubDialog saveId={save.id} onDone={() => setAdding(null)} />}
+        {adding === 'player' && <AddPlayerDialog saveId={save.id} onDone={() => setAdding(null)} />}
       </Dialog>
       <Dialog open={playerId !== null} onOpenChange={(open) => !open && setPlayerId(null)}>
         {playerId !== null && (

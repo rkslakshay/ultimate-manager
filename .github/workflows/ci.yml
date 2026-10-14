@@ -48,6 +48,8 @@ jobs:
       - run: npm test
       - run: npm run build --workspace @um/web
       - run: npx playwright install --with-deps chromium
+      # Builds the pack from the committed fictional fixtures (used by API and E2E tests).
+      - run: npm run data:import -- --pack sample
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: failure()

@@ -71,8 +71,14 @@ export function SearchPage() {
   };
   const search = usePlayerSearch(save.id, params);
   const columns = useMemo(
-    () => playerColumns({ saveId: save.id, showClub: true, serverSortable: true }),
-    [save.id],
+    () =>
+      playerColumns({
+        saveId: save.id,
+        showClub: true,
+        serverSortable: true,
+        markGenerated: save.dataPack !== 'fictional',
+      }),
+    [save.id, save.dataPack],
   );
 
   return (

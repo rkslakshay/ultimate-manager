@@ -13,6 +13,7 @@ import type { PlayerDetailDto } from '@um/shared';
 import { Link, useParams } from 'react-router';
 import { ClubBadge } from '@/components/game/ClubBadge';
 import { PositionsMap } from '@/components/game/PositionsMap';
+import { ProvenanceTag } from '@/components/game/ProvenanceTag';
 import { Stars } from '@/components/game/Stars';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,6 +31,7 @@ import {
 import { attributeClass, cn } from '@/lib/utils';
 import { useGameSave } from '../game/useGameSave';
 import { usePlayer } from './api';
+import { PlayerHistory } from './PlayerHistory';
 
 const GROUP_TITLES: Record<AttributeGroup, string> = {
   technical: 'Technical',
@@ -38,7 +40,21 @@ const GROUP_TITLES: Record<AttributeGroup, string> = {
   goalkeeping: 'Goalkeeping',
 };
 
-function AttributeColumn({ group, attributes }: { group: AttributeGroup; attributes: number[] }) {
+const ORIGIN_NOTE: Record<string, string> = {
+  D: 'Derived: the source data has no equivalent, so the game estimated it',
+  F: 'From a coarse source rating (detailed rating missing)',
+};
+
+function AttributeColumn({
+  group,
+  attributes,
+  origin,
+}: {
+  group: AttributeGroup;
+  attributes: number[];
+  /** Per-attribute origin string (S/F/D) for imported players. */
+  origin?: string;
+}) {
   return (
     <section aria-labelledby={`attr-${group}`}>
       <h3
@@ -50,14 +66,23 @@ function AttributeColumn({ group, attributes }: { group: AttributeGroup; attribu
       <dl className="flex flex-col">
         {ATTRIBUTE_GROUPS[group].map((key) => {
           const value = attributes[A[key]] ?? 1;
+          const note = origin ? ORIGIN_NOTE[origin[A[key]] ?? 'S'] : undefined;
           return (
             <div
               key={key}
               className="flex items-center justify-between border-b border-border/60 py-1 text-sm last:border-0"
             >
               <dt className="text-fg-muted">{ATTRIBUTE_LABELS[key]}</dt>
-              <dd className={cn('tabular w-6 text-right font-semibold', attributeClass(value))}>
+              <dd
+                className={cn(
+                  'tabular w-6 text-right font-semibold',
+                  attributeClass(value),
+                  note && 'underline decoration-dotted decoration-fg-subtle underline-offset-4',
+                )}
+                title={note}
+              >
                 {value}
+                {note && <span className="sr-only"> ({note})</span>}
               </dd>
             </div>
           );
@@ -86,7 +111,27 @@ function PlayerHeader({ player }: { player: PlayerDetailDto }) {
         <div className="size-14 rounded-md border border-dashed border-border-strong" />
       )}
       <div className="min-w-0 flex-1">
-        <h2 className="truncate text-xl font-semibold">{fullName(player)}</h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="truncate text-xl font-semibold">
+            {player.shirtNumber !== null && (
+              <span className="mr-2 text-fg-subtle">{player.shirtNumber}</span>
+            )}
+            {fullName(player)}
+          </h2>
+          {player.origin === 'imported' && (
+            <Badge tone="success" title="Identity and most data come from the imported data pack">
+              Real player
+            </Badge>
+          )}
+          {player.origin === 'generated' && player.source === null && (
+            <Badge title="Created by the game, not a real person">Generated</Badge>
+          )}
+          {player.origin === 'custom' && (
+            <Badge tone="accent" title="Added in the database editor">
+              Custom
+            </Badge>
+          )}
+        </div>
         <p className="text-sm text-fg-muted">
           {POSITION_LABELS[player.position as keyof typeof POSITION_LABELS]} · {player.age} years ·{' '}
           {player.nation.name} ·{' '}
@@ -145,10 +190,21 @@ export function PlayerPage() {
         <Card>
           <CardHeader>
             <CardTitle>Attributes</CardTitle>
+            {p.source && (
+              <span className="text-2xs text-fg-subtle">
+                <span className="underline decoration-dotted underline-offset-4">Dotted</span> =
+                derived, not in the source
+              </span>
+            )}
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-3">
             {groups.map((g) => (
-              <AttributeColumn key={g} group={g} attributes={p.attributes} />
+              <AttributeColumn
+                key={g}
+                group={g}
+                attributes={p.attributes}
+                origin={p.source?.attributeOrigin}
+              />
             ))}
           </CardContent>
         </Card>
@@ -191,10 +247,20 @@ export function PlayerPage() {
             <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
               <Info label="Born">
                 {p.birthDate} ({p.age})
+                <ProvenanceTag status={p.source?.fields.birthDay} />
               </Info>
-              <Info label="Nationality">{p.nation.name}</Info>
-              <Info label="Height">{p.heightCm} cm</Info>
-              <Info label="Weight">{p.weightKg} kg</Info>
+              <Info label="Nationality">
+                {p.nation.name}
+                <ProvenanceTag status={p.source?.fields.nationality} />
+              </Info>
+              <Info label="Height">
+                {p.heightCm} cm
+                <ProvenanceTag status={p.source?.fields.height} />
+              </Info>
+              <Info label="Weight">
+                {p.weightKg} kg
+                <ProvenanceTag status={p.source?.fields.weight} />
+              </Info>
               <Info label="Preferred foot">
                 {p.foot === 'either' ? 'Either' : p.foot === 'left' ? 'Left' : 'Right'}
                 {p.foot !== 'either' && (
@@ -211,13 +277,29 @@ export function PlayerPage() {
           <CardContent>
             {p.club ? (
               <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-                <Info label="Wage">{wage(p.wage)}</Info>
-                <Info label="Expires">{contractEnd(p.contractEnd)}</Info>
+                <Info label="Wage">
+                  {wage(p.wage)}
+                  <ProvenanceTag status={p.source?.fields.wage} />
+                </Info>
+                <Info label="Expires">
+                  {contractEnd(p.contractEnd)}
+                  <ProvenanceTag status={p.source?.fields.contractEnd} />
+                </Info>
                 <Info label="Squad status">{SQUAD_STATUS_LABELS[p.squadStatus ?? ''] ?? '—'}</Info>
                 <Info label="Release clause">
-                  {p.releaseClause ? moneyFull(p.releaseClause) : 'None'}
+                  {p.releaseClause
+                    ? moneyFull(p.releaseClause)
+                    : p.source?.fields.releaseClause === 'unknown'
+                      ? 'Unknown'
+                      : 'None'}
+                  {p.releaseClause !== null && (
+                    <ProvenanceTag status={p.source?.fields.releaseClause} />
+                  )}
                 </Info>
-                <Info label="Value">{money(p.value)}</Info>
+                <Info label="Value">
+                  {money(p.value)}
+                  <ProvenanceTag status={p.source?.fields.value} />
+                </Info>
               </dl>
             ) : (
               <p className="text-sm text-fg-muted">
@@ -243,6 +325,30 @@ export function PlayerPage() {
           </CardContent>
         </Card>
       </div>
+      {p.source && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Source data</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2 text-sm">
+            <p>
+              Source ratings: overall <strong>{p.source.overall ?? '?'}</strong> · potential{' '}
+              <strong>{p.source.potential ?? '?'}</strong> (0-99, as given). The game maps them onto
+              its own attributes; Current and Potential Ability are computed by the game, not
+              copied.
+            </p>
+            <p className="text-xs text-fg-muted">
+              {[...p.source.attributeOrigin].filter((c) => c === 'S').length} attributes from
+              detailed source ratings ·{' '}
+              {[...p.source.attributeOrigin].filter((c) => c === 'F').length} from coarse ratings ·{' '}
+              {[...p.source.attributeOrigin].filter((c) => c === 'D').length} derived. Hidden
+              attributes (consistency, injury proneness, personality…) are derived. Source key{' '}
+              <code>{p.source.key}</code>.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+      {p.origin === 'imported' && <PlayerHistory saveId={save.id} playerId={p.id} />}
     </div>
   );
 }

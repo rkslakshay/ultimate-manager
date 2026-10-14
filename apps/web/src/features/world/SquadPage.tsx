@@ -15,7 +15,10 @@ export function SquadPage() {
   const save = useGameSave();
   const navigate = useNavigate();
   const club = useClub(save.id, save.managerClubId);
-  const columns = useMemo(() => playerColumns({ saveId: save.id }), [save.id]);
+  const columns = useMemo(
+    () => playerColumns({ saveId: save.id, markGenerated: save.dataPack !== 'fictional' }),
+    [save.id, save.dataPack],
+  );
 
   if (save.managerClubId === null) return <Navigate to={`/game/${save.id}/choose-club`} replace />;
   return (

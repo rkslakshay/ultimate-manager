@@ -33,7 +33,8 @@ function ClubHeader({ club, isMine }: { club: ClubDetailDto; isMine: boolean }) 
           {isMine && <Badge tone="accent">Your club</Badge>}
         </div>
         <p className="text-sm text-fg-muted">
-          {club.city}, {club.nation.name} ·{' '}
+          {club.city ? `${club.city}, ` : ''}
+          {club.nation.name} ·{' '}
           {club.league ? (
             <Link
               className="hover:underline"
@@ -61,7 +62,10 @@ export function ClubPage({ own = false }: { own?: boolean }) {
   const params = useParams();
   const clubId = own ? save.managerClubId : Number(params.clubId);
   const club = useClub(save.id, clubId);
-  const columns = useMemo(() => playerColumns({ saveId: save.id }), [save.id]);
+  const columns = useMemo(
+    () => playerColumns({ saveId: save.id, markGenerated: save.dataPack !== 'fictional' }),
+    [save.id, save.dataPack],
+  );
 
   if (own && save.managerClubId === null)
     return <Navigate to={`/game/${save.id}/choose-club`} replace />;
@@ -90,7 +94,7 @@ export function ClubPage({ own = false }: { own?: boolean }) {
           </CardHeader>
           <CardContent>
             <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-              <Fact label="Founded">{c.founded}</Fact>
+              <Fact label="Founded">{c.founded ?? 'Unknown'}</Fact>
               <Fact label="Reputation">{c.reputation} / 100</Fact>
               <Fact label="Stadium">{c.stadium.name}</Fact>
               <Fact label="Capacity">{count(c.stadium.capacity)}</Fact>
@@ -110,6 +114,12 @@ export function ClubPage({ own = false }: { own?: boolean }) {
               <Fact label="Wage budget">{wage(c.wageBudget)}</Fact>
               <Fact label="Current wages">{wage(c.wageBill)}</Fact>
             </dl>
+            {c.sourceFields?.finances === 'derived' && (
+              <p className="mt-3 text-2xs text-fg-subtle">
+                Reputation, finances and facilities are derived by the game from squad value and
+                league; they are not the club's real figures.
+              </p>
+            )}
           </CardContent>
         </Card>
         <Card>

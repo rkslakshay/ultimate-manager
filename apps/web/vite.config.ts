@@ -14,6 +14,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), tailwindcss()],
+    // Pre-bundle deps only used on some routes, so the dev server doesn't re-optimise and
+    // reload the page the first time such a route is opened (which also breaks E2E runs).
+    optimizeDeps: { include: ['recharts'] },
     resolve: {
       alias: { '@': path.resolve(here, 'src') },
     },

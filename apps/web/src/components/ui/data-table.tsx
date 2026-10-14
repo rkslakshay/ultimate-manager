@@ -236,10 +236,11 @@ export function DataTable<TData>({
               </tr>
             ))}
           </thead>
-          <tbody>
+          <tbody aria-busy={isLoading || undefined}>
             {isLoading ? (
               Array.from({ length: 6 }, (_, i) => (
-                <tr key={i} className="border-b border-border last:border-0">
+                // Placeholder rows are visual only: hidden from assistive tech (and from row queries).
+                <tr key={i} aria-hidden className="border-b border-border last:border-0">
                   {Array.from({ length: visibleColumns }, (_, j) => (
                     <td key={j} className="px-2.5 py-2">
                       <Skeleton className="h-3.5 w-full max-w-28" />
