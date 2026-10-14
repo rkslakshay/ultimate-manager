@@ -133,6 +133,15 @@ relative effort (S/M/L/XL).
   wages in sane ranges); world of ≥3,000 players generated + saved in < 5 s; you can create a
   save, pick a club and browse every club/player.
 
+### Phase 1.5 — Real-world data packs (inserted at the user's request) ✅
+
+Data-pack architecture (fictional generator + imported, versioned packs), importer CLI with
+inspection, conservative identity matching, documented attribute mapping with field-level
+provenance, contracts/values/historical transfers, fitted value model, editor can add
+entities, deterministic progression and a headless multi-season development simulator. See
+`docs/DATA_*.md` and DECISIONS D-020…D-030. Real data is imported once the user supplies
+dataset files.
+
 ### Phase 2 — Match engine (XL — the heart)
 
 **v1 (headless, statistical):** possession-chain model. Each attacking phase picks events

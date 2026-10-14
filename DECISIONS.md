@@ -205,3 +205,21 @@ of worth, not an asking price or fee.
 
 Tests and the `sample` pack use a generated, entirely fictional dataset in the real formats
 (`data-packs/fixtures/sample`), with planted edge cases. No licensed data is committed.
+
+### D-029 Progression is a pure engine module, ahead of the season loop
+
+`applyProgression(player, context)` takes every performance input explicitly (minutes,
+ratings, injuries, training), so the season loop (Phase 3), match engine (Phase 2) and training
+(Phase 5) plug in without changing it. Monthly reviews apply 5 % of the season's expected
+change each (10 × = 50 %, then 40 % at season end), with per-review caps and stochastic
+rounding; potential never moves. Growth scales with untapped potential (capped at 1.6×) so
+high-potential players can reach elite level; decline hits physical attributes first.
+
+### D-030 Long-run stability is checked with synthetic inputs and a burn-in
+
+Without matches, the headless simulator uses documented synthetic playing time (squad rank,
+loans for young players outside the top 18), ratings and injuries. Checks compare season 20
+with season 5: imported worlds first settle (thin real squads fill up, the fictional
+generator's slightly strong squads relax ~6 %). Youth intake quality is anchored to each
+club's squad level, so any pack's ability scale stays stable. Released unattached players
+drift out of the game to keep the population bounded.

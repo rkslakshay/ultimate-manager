@@ -1,16 +1,82 @@
 # Progress
 
-_Last updated: 2026-10-14_
+_Last updated: 2026-10-15_
 
 Plan for all phases: [docs/ROADMAP.md](docs/ROADMAP.md). Reasoning: [DECISIONS.md](DECISIONS.md).
 
-| Phase            | Status         |
-| ---------------- | -------------- |
-| 0 — Foundation   | ✅ complete    |
-| 1 — Data & world | ✅ complete    |
-| 2 — Match engine | 🔨 in progress |
-| 3 — Season loop  | ⏳ next        |
-| 4–9              | not started    |
+| Phase                       | Status                                        |
+| --------------------------- | --------------------------------------------- |
+| 0 — Foundation              | ✅ complete                                   |
+| 1 — Data & world            | ✅ complete                                   |
+| 1.5 — Real-world data packs | ✅ complete (awaiting your dataset files)     |
+| 2 — Match engine            | ⏸ paused (groundwork committed), resumes next |
+| 3 — Season loop             | ⏳ next                                       |
+| 4–9                         | not started                                   |
+
+---
+
+## Phase 1.5 — Real-world data packs ✅
+
+### Blocker
+
+**No dataset files have been provided** (`data-packs/raw/` doesn't exist in your checkout yet).
+The whole pipeline is built and tested on a committed _fictional_ fixture dataset; nothing real
+has been imported or written from memory. Put files as described in
+[data-packs/README.md](data-packs/README.md), run `npm run data:inspect`, then
+`npm run data:import -- --pack real`.
+
+### Done
+
+- **Data packs:** `fictional` (generator, default) plus imported packs; versioned by content
+  hash; saves record pack + version and keep their own world copy; pack history (transfers,
+  valuations) stored once per version in shared immutable tables. Re-import never changes an
+  ongoing career (tested).
+- **Importer** (`@um/data-import`): `data:inspect` inventory; `data:import` with dry run;
+  streaming CSV with encoding detection; column alias tables; conservative identity matching
+  (unique exact keys, ambiguity and fuzzy candidates reported, approve/reject overrides,
+  persistent identity map); documented attribute mapping with S/F/D provenance; seeded
+  hidden attributes; CA calibrated to the source overall; contracts, wages, release clauses,
+  values, valuation history and transfers (unknown fees stay unknown); derived club finances,
+  reputation and colours; generated squad fillers and free agents; fitted value model;
+  validation; Markdown + JSON quality report; version diff on re-import.
+- **Engine:** world schema v2 (origins, provenance, shirt numbers, crests, name pools),
+  fitted value model, **progression** (`applyProgression`), retirements, youth intakes and a
+  headless multi-season development simulator with stability checks.
+- **API:** pack listing, saves from packs, player history, crest serving, attribute
+  development history, editor create endpoints, import creates rows without an id.
+- **Web:** pack choice in the new-career dialog, real/generated/custom badges, provenance
+  tags and dotted derived attributes, source-data panel, market value chart, historical
+  transfers, development section, user crests, add club/player dialogs.
+- **Docs:** `docs/DATA_SOURCES.md`, `DATA_MAPPING.md`, `DATA_QUALITY.md`,
+  `data-packs/README.md`, README legal notice, DECISIONS D-020…D-030.
+
+### Verification
+
+| Check                                    | Result                                                                                                               |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| typecheck / lint / format                | ✅                                                                                                                   |
+| `npm test`                               | ✅ 140 (engine 44, shared 9, data-import 38, api 46, web 3)                                                          |
+| `npm run test:e2e`                       | ✅ 8 (incl. new save from a pack → club → squad → player with provenance and transfer history; editor adds a player) |
+| Sample import                            | ✅ 337 imported + 116 generated players, 197 transfers, 941 valuations, deterministic version                        |
+| Scale benchmark (fictional, 18k players) | import 2.1 s · first save 4.8 s · later saves 3.4 s                                                                  |
+| 20-season development sim                | ✅ 9/9 stability checks on the fictional world (3.4k players, 4 s) and the sample pack                               |
+
+### Known issues / simplifications
+
+- Real-data integration is **unverified against real files** (none provided). Column aliases
+  were written for the expected dataset shapes; `data:inspect` will show any mismatch.
+- Progression isn't driven by game time yet: the season loop (Phase 3) will call it. Until
+  then the development simulator uses synthetic playing time and the profile's Development
+  section is empty.
+- Burn-in: worlds settle in their first 4 simulated seasons (fictional mean CA 102 → 96,
+  then stable at ~95).
+- First save from a full-size pack takes ~4.8 s (mostly inserting 18k players); `COPY` would
+  speed it up if needed.
+- Promotion/relegation counts, league countries and tiers fall back to labelled defaults when
+  neither the data nor the config provides them. National cups are simulated.
+- Matching uses birth dates: ratings rows without one can't be matched to Transfermarkt-style
+  records.
+- Continental competitions aren't modelled yet (no data path).
 
 ---
 
