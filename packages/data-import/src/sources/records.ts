@@ -99,14 +99,20 @@ export interface TmPlayer {
   clubSourceId: string | null;
   clubName: string | null;
   competitionId: string | null;
+  /** Last season (start year) the player appeared in the source; older means the club is stale. */
+  lastSeason: number | null;
 }
 
 export interface TmClub {
   sourceId: string;
   name: string;
+  /** URL slug, e.g. "benfica-lissabon" (often closer to the common name than the formal name). */
+  code: string | null;
   competitionId: string | null;
   stadiumName: string | null;
   stadiumSeats: number | null;
+  /** Last season (start year) the source tracked this club's squad. */
+  lastSeason: number | null;
 }
 
 export interface TmCompetition {

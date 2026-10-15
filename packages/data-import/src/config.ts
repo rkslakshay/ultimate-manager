@@ -30,8 +30,13 @@ export const importConfigSchema = z.object({
   includeLeagues: z.array(z.string()).optional(),
   /** Keyed by source league name. */
   leagues: z.record(z.string(), leagueRule).default({}),
-  /** Which source decides a player's current club when sources disagree. */
-  primaryClubSource: z.enum(['ea', 'tm']).default('ea'),
+  /**
+   * Which source decides a player's current club when sources disagree. Default 'tm': the start
+   * date is inferred from the Transfermarkt-style valuations, so its current club is the one that
+   * matches the career start (ratings snapshots are often older). Falls back to the ratings club
+   * when the Transfermarkt club is not in the pack.
+   */
+  primaryClubSource: z.enum(['ea', 'tm']).default('tm'),
   /** Include players that have no ratings source (attributes fully derived). Default false. */
   includeUnrated: z.boolean().default(false),
   /** Generated players are added to clubs with fewer than this many real players. */

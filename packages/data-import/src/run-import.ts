@@ -66,7 +66,13 @@ const PACK_SOURCES: Record<
   },
 };
 
-const sha256 = (file: string) => createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+/** Streaming SHA-256 (source files can be hundreds of MB). */
+async function sha256(file: string): Promise<string> {
+  const hash = createHash('sha256');
+  for await (const chunk of fs.createReadStream(file, { highWaterMark: 1 << 20 }))
+    hash.update(chunk as Buffer);
+  return hash.digest('hex');
+}
 
 function convertCurrencies(data: SourceData, config: ImportConfig) {
   const { ea, tm } = config.sourceCurrency;
@@ -164,7 +170,12 @@ export async function buildPack(
     return finish(null, null);
   }
   const data = await readSources(sourceDir, log);
-  report.files = data.files.map((f) => ({ ...f, sha256: sha256(path.join(sourceDir, f.path)) }));
+  report.files = await Promise.all(
+    data.files.map(async (f) => ({
+      ...f,
+      sha256: f.table === 'not used' ? '' : await sha256(path.join(sourceDir, f.path)),
+    })),
+  );
   if (!data.files.length) {
     log.error(
       'source.no_files',

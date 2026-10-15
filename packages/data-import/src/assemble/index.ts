@@ -1,5 +1,6 @@
 import {
   ageOn,
+  civilFromDay,
   clamp,
   clubCode,
   createRng,
@@ -137,9 +138,33 @@ export function buildRealWorld(ctx: BuildContext): BuildResult {
   };
 
   // --- players
+  // A Transfermarkt-style current club is only trusted when the player appeared in the source in
+  // the career-start season (retired/inactive players keep a stale club).
+  const startSeason = civilFromDay(startDay).year - (civilFromDay(startDay).month >= 7 ? 0 : 1);
   const clubKeyFor = (p: EaWithClub, tm: TmPlayer | null): string | null => {
-    const tmKey = tm?.clubSourceId ? ctx.eaClubKeyByTm.get(tm.clubSourceId) : undefined;
+    const current = tm?.clubSourceId && tm.lastSeason !== null && tm.lastSeason >= startSeason;
+    if (tm?.clubSourceId && !current) log.count('tm.club_stale_ignored');
+    const tmKey = current ? ctx.eaClubKeyByTm.get(tm.clubSourceId!) : undefined;
     if (tmKey && tmKey !== p.clubKey) log.count('conflict.current_club');
+    const oldClub = ctx.clubs.byEaClub.get(p.clubKey)?.tm;
+    const oldClubKnown = oldClub !== undefined;
+    if (
+      config.primaryClubSource === 'tm' &&
+      tm &&
+      !current &&
+      (oldClub?.lastSeason ?? -1) >= startSeason
+    ) {
+      // The source tracked his old club's squad this season and he wasn't in it: he has left
+      // (retired, or moved somewhere the source doesn't cover).
+      log.count('tm.left_tracked_club');
+      return null;
+    }
+    if (config.primaryClubSource === 'tm' && current && !tmKey && oldClubKnown) {
+      // His club is identified in both sources, but he now plays (this season) for a club that
+      // isn't in the pack: he has left the pack's clubs.
+      log.count('tm.moved_to_club_outside_pack');
+      return null;
+    }
     const key = config.primaryClubSource === 'tm' && tmKey ? tmKey : p.clubKey;
     return includedClubKeys.has(key) ? key : null;
   };
@@ -154,9 +179,10 @@ export function buildRealWorld(ctx: BuildContext): BuildResult {
   const competitionIdByLeague = new Map(
     plan.leagues.map((l) => [l.key, ids.id('competitions', [`league:${l.key}`])]),
   );
+  // Named after the club's own ratings-source players (not whoever was moved there).
   const clubName = new Map<string, string>();
-  for (const b of built)
-    if (!clubName.has(b.clubKey) && b.ea.clubName) clubName.set(b.clubKey, b.ea.clubName);
+  for (const p of sorted)
+    if (!clubName.has(p.clubKey) && p.clubName) clubName.set(p.clubKey, p.clubName);
   for (const p of plan.players)
     if (!clubName.has(p.clubKey) && p.clubName) clubName.set(p.clubKey, p.clubName);
 

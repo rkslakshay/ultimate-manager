@@ -1,7 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { streamCsv } from './csv-stream';
-import { detectTable, resolveColumns, TABLES, type TableKind } from './sources/columns';
+import {
+  detectTable,
+  EA_PLAYERS,
+  isWomensTable,
+  resolveColumns,
+  TABLES,
+  type TableKind,
+} from './sources/columns';
 
 export interface FileInventory {
   path: string;
@@ -82,8 +89,21 @@ async function inspectCsv(file: string, rawDir: string): Promise<FileInventory> 
           .map(([k, v]) => [k, v.length > 60 ? `${v.slice(0, 57)}...` : v]),
       ),
     ),
-    note: table ? undefined : 'Not recognised as a supported table (see docs/DATA_SOURCES.md)',
+    note: table ? undefined : unusedNote(path.basename(file), header),
   };
+}
+
+/** Why a CSV isn't used, in words the user can act on. */
+function unusedNote(name: string, header: readonly string[]): string {
+  if (isWomensTable(name) && resolveColumns(header, EA_PLAYERS).missingRequired.length === 0) {
+    return "Women's players: not imported (the game world is a men's football world)";
+  }
+  if (/coach|teams?.csv$|national_teams|countries/i.test(name))
+    return 'Not used by the importer yet';
+  if (/appearances|game_lineups|game_events|club_games|^games.csv$/i.test(name)) {
+    return 'Match data: not used yet (needed once matches are simulated)';
+  }
+  return 'Not recognised as a supported table (see data-packs/README.md for expected file names)';
 }
 
 /** Inventory every file under the raw folder. Never modifies anything. */

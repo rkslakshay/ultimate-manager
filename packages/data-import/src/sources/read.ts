@@ -3,7 +3,7 @@ import path from 'node:path';
 import { streamCsv } from '../csv-stream';
 import type { ImportLog } from '../log';
 import { parseDateFlexible, parseInteger, parseNumber } from '../normalize';
-import { detectTable, resolveColumns, TABLES, type TableKind } from './columns';
+import { detectTable, isWomensTable, resolveColumns, TABLES, type TableKind } from './columns';
 import { RATING_KEYS, type EaPlayer, type Ratings, type SourceData } from './records';
 
 type Row = Record<string, string>;
@@ -166,6 +166,23 @@ function dedupe(players: EaPlayer[], updates: Map<EaPlayer, number>, log: Import
   return [...byId.values()];
 }
 
+/** Newest game version in a ratings table (by numeric order), or null when it has none. */
+async function latestEaVersion(file: string): Promise<string | null> {
+  const { header } = await streamCsv(file, () => {}, { limit: 0 });
+  if (detectTable(path.basename(file), header) !== 'eaPlayers') return null;
+  const versionHeader = (
+    resolveColumns(header, TABLES.eaPlayers).map as Record<string, string | null>
+  ).version;
+  if (!versionHeader) return null;
+  let best: string | null = null;
+  await streamCsv(file, (row) => {
+    const v = (row[versionHeader] ?? '').trim();
+    if (v && (best === null || (parseNumber(v) ?? -Infinity) > (parseNumber(best) ?? -Infinity)))
+      best = v;
+  });
+  return best;
+}
+
 /** Read every supported CSV under `dir` into typed source records. */
 export async function readSources(dir: string, log: ImportLog): Promise<SourceData> {
   const data: SourceData = {
@@ -182,6 +199,26 @@ export async function readSources(dir: string, log: ImportLog): Promise<SourceDa
     let get: Getter = () => '';
     let accepted = 0;
     let resolvedOnce = false;
+    // Skip tables the importer doesn't use without reading them (match logs can be 400 MB+).
+    const peek = await streamCsv(file, () => {}, { limit: 0 });
+    if (!detectTable(path.basename(file), peek.header)) {
+      log.info(
+        'source.file_not_used',
+        `${rel}: not used (${isWomensTable(path.basename(file)) ? "women's table" : 'not a table the importer reads'})`,
+        { file: rel },
+      );
+      data.files.push({
+        path: rel,
+        table: 'not used',
+        rows: 0,
+        accepted: 0,
+        encoding: peek.encoding,
+      });
+      continue;
+    }
+    // Ratings tables can hold ~10 game versions (180k rows): find the newest version in a cheap
+    // first pass so only its rows are parsed into records.
+    const latestVersion = await latestEaVersion(file);
     const result = await streamCsv(file, (row, i) => {
       if (!resolvedOnce) {
         resolvedOnce = true;
@@ -201,6 +238,14 @@ export async function readSources(dir: string, log: ImportLog): Promise<SourceDa
       const where = { file: rel, row: i + 2 };
       switch (kind) {
         case 'eaPlayers': {
+          if (
+            latestVersion !== null &&
+            text(get(row, 'version')) !== null &&
+            get(row, 'version').trim() !== latestVersion
+          ) {
+            log.count('ea.rows_other_versions');
+            return;
+          }
           const p = parseEa(get, row, i, rel, log);
           if (p) {
             data.ea.push(p);
@@ -234,6 +279,7 @@ export async function readSources(dir: string, log: ImportLog): Promise<SourceDa
             clubSourceId: text(get(row, 'clubId')),
             clubName: text(get(row, 'clubName')),
             competitionId: text(get(row, 'competitionId')),
+            lastSeason: parseInteger(get(row, 'lastSeason')),
           });
           accepted++;
           break;
@@ -246,9 +292,11 @@ export async function readSources(dir: string, log: ImportLog): Promise<SourceDa
           data.tm.clubs.push({
             sourceId: id,
             name,
+            code: text(get(row, 'code')),
             competitionId: text(get(row, 'competitionId')),
             stadiumName: text(get(row, 'stadiumName')),
             stadiumSeats: parseInteger(get(row, 'stadiumSeats')),
+            lastSeason: parseInteger(get(row, 'lastSeason')),
           });
           accepted++;
           break;
@@ -315,7 +363,11 @@ export async function readSources(dir: string, log: ImportLog): Promise<SourceDa
     });
     if (!resolvedOnce) kind = detectTable(path.basename(file), result.header);
     if (!kind) {
-      log.warn('source.unrecognised_file', `${rel}: not a supported table; skipped`, { file: rel });
+      log.info(
+        'source.file_not_used',
+        `${rel}: not used (${isWomensTable(path.basename(file)) ? "women's table" : 'not a table the importer reads'})`,
+        { file: rel },
+      );
     } else if (result.rows === 0) {
       log.warn('source.empty_file', `${rel}: no data rows`, { file: rel });
     }

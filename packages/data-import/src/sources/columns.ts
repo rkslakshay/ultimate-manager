@@ -124,10 +124,12 @@ export const TM_PLAYERS = {
 export const TM_CLUBS = {
   sourceId: col(['club_id'], true),
   name: col(['name', 'club_name'], true),
+  code: col(['club_code']),
   competitionId: col(['domestic_competition_id']),
   stadiumName: col(['stadium_name']),
   stadiumSeats: col(['stadium_seats', 'stadium_capacity']),
   squadSize: col(['squad_size']),
+  lastSeason: col(['last_season']),
 } satisfies TableSpec;
 
 export const TM_COMPETITIONS = {
@@ -199,24 +201,34 @@ export function resolveColumns<S extends TableSpec>(
   return { map, missingRequired, missingOptional, unused: header.filter((h) => !used.has(h)) };
 }
 
-/** Which table kind a CSV most likely is: by file name first, then by header fit. */
+/**
+ * Transfermarkt-style tables are recognised by FILE NAME (players.csv, clubs.csv,
+ * competitions.csv, transfers.csv, player_valuations.csv), because other tables in the same
+ * dataset (appearances, game_lineups, game_events…) share id/name columns and would otherwise be
+ * mistaken for them. The ratings table is recognised by its distinctive header
+ * (overall + potential + positions), whatever the file is called.
+ */
+const TM_FILE_NAMES: [RegExp, TableKind][] = [
+  [/^players.csv$/, 'tmPlayers'],
+  [/^clubs.csv$/, 'tmClubs'],
+  [/^competitions.csv$/, 'tmCompetitions'],
+  [/^transfers.csv$/, 'tmTransfers'],
+  [/^(player_)?valuations.csv$/, 'tmValuations'],
+];
+
+/** Women's football tables are kept out of the (men's) world rather than mixed into it. */
+export const isWomensTable = (fileName: string) =>
+  /(^|[^a-z])(female|women|womens)([^a-z]|$)/i.test(fileName);
+
+/** Which supported table a CSV is, or null. */
 export function detectTable(fileName: string, header: readonly string[]): TableKind | null {
   const base = fileName.toLowerCase();
-  const byName: [RegExp, TableKind][] = [
-    [/valuation/, 'tmValuations'],
-    [/transfer/, 'tmTransfers'],
-    [/competition/, 'tmCompetitions'],
-    [/^clubs?\b|clubs\.csv$/, 'tmClubs'],
-  ];
-  for (const [re, kind] of byName) {
+  if (resolveColumns(header, EA_PLAYERS).missingRequired.length === 0) {
+    return isWomensTable(base) ? null : 'eaPlayers';
+  }
+  for (const [re, kind] of TM_FILE_NAMES) {
     if (re.test(base) && resolveColumns(header, TABLES[kind]).missingRequired.length === 0)
       return kind;
-  }
-  // Players: EA ratings have overall/potential; Transfermarkt-style players don't.
-  if (resolveColumns(header, EA_PLAYERS).missingRequired.length === 0) return 'eaPlayers';
-  if (resolveColumns(header, TM_PLAYERS).missingRequired.length === 0) return 'tmPlayers';
-  for (const kind of ['tmClubs', 'tmCompetitions', 'tmTransfers', 'tmValuations'] as const) {
-    if (resolveColumns(header, TABLES[kind]).missingRequired.length === 0) return kind;
   }
   return null;
 }

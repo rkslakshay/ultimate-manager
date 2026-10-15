@@ -3,7 +3,7 @@ import { jaroWinkler, normalizeClubName, normalizeName } from './normalize';
 import type { EaPlayer, TmClub, TmPlayer } from './sources/records';
 
 export type PlayerMatchMethod =
-  'approved' | 'full_name_dob' | 'name_dob' | 'surname_dob_nationality';
+  'approved' | 'full_name_dob' | 'name_dob' | 'name_tokens_dob' | 'surname_dob_nationality';
 
 export interface PlayerPair {
   ea: EaPlayer;
@@ -25,6 +25,12 @@ export interface PlayerMatching {
 }
 
 const lastToken = (s: string) => s.split(' ').at(-1) ?? s;
+/** True when every token of `short` appears in `long` in the same order (`long` may have extra names). */
+function isTokenSubsequence(short: string[], long: string[]): boolean {
+  let i = 0;
+  for (const t of long) if (t === short[i]) i++;
+  return i === short.length;
+}
 const pairKey = (ea: string, tm: string) => `${ea}|${tm}`;
 
 /** Match ratings-source players to Transfermarkt-style players. Conservative by design. */
@@ -92,6 +98,18 @@ export function matchPlayers(ea: EaPlayer[], tm: TmPlayer[], config: ImportConfi
         const n = normalizeName(e.name);
         const tn = tmNames.get(t.sourceId)!;
         return n === tn.full || n === tn.firstLast;
+      },
+    ],
+    [
+      // "Kylian Mbappé" vs "Kylian Mbappé Lottin": same first name, every token of the shorter name
+      // present in order in the longer one (extra middle/maternal surnames), same birth date.
+      'name_tokens_dob',
+      (e, t) => {
+        if (!e.fullName) return false;
+        const a = normalizeName(e.fullName).split(' ');
+        const b = tmNames.get(t.sourceId)!.full.split(' ');
+        const [short, long] = a.length <= b.length ? [a, b] : [b, a];
+        return short.length >= 2 && short[0] === long[0] && isTokenSubsequence(short, long);
       },
     ],
     [
@@ -185,7 +203,7 @@ export function matchPlayers(ea: EaPlayer[], tm: TmPlayer[], config: ImportConfi
 
 // ------------------------------------------------------------------ clubs
 
-export type ClubMatchMethod = 'player_overlap' | 'exact_name' | 'alias';
+export type ClubMatchMethod = 'player_overlap' | 'exact_name' | 'alias' | 'name_tokens';
 
 export interface ClubMatching {
   /** Ratings-source club key → Transfermarkt-style club and how it was matched. */
@@ -202,8 +220,9 @@ export const eaClubKey = (p: Pick<EaPlayer, 'clubSourceId' | 'clubName'>) =>
       : null;
 
 /**
- * Match ratings-source clubs to Transfermarkt-style clubs: first by where matched players
- * actually play (≥ 3 players and ≥ 60% agreement), then by exact normalised name or alias.
+ * Match ratings-source clubs to Transfermarkt-style clubs: first by a unique exact normalised name
+ * or alias, then by where matched players actually play now (≥ 3 players, at least twice as many as
+ * at any other club, and ≥ 25% of the squad).
  */
 export function matchClubs(
   eaPlayers: EaPlayer[],
@@ -227,8 +246,10 @@ export function matchClubs(
   }
   const tmByName = new Map<string, TmClub[]>();
   for (const c of tmClubs) {
-    const n = normalizeClubName(c.name);
-    tmByName.set(n, [...(tmByName.get(n) ?? []), c]);
+    // The formal name and the URL slug ("inter-miami-cf") both count as the club's name.
+    const names = new Set([normalizeClubName(c.name)]);
+    if (c.code) names.add(normalizeClubName(c.code.replace(/-/g, ' ')));
+    for (const n of names) tmByName.set(n, [...(tmByName.get(n) ?? []), c]);
   }
   const aliases = new Map(
     Object.entries(config.clubAliases).map(([k, v]) => [
@@ -237,37 +258,92 @@ export function matchClubs(
     ]),
   );
 
+  const squadSize = new Map<string, number>();
+  for (const p of eaPlayers) {
+    const key = eaClubKey(p);
+    if (key) squadSize.set(key, (squadSize.get(key) ?? 0) + 1);
+  }
   const byEaClub: ClubMatching['byEaClub'] = new Map();
-  const unmatched: string[] = [];
   const claimedTm = new Set<string>();
-  for (const [key, name] of eaNames) {
-    const t = tally.get(key);
-    if (t) {
-      const total = [...t.values()].reduce((a, b) => a + b, 0);
-      const [bestId, count] = [...t.entries()].sort((a, b) => b[1] - a[1])[0]!;
-      if (count >= 3 && count / total >= 0.6 && !claimedTm.has(bestId)) {
-        byEaClub.set(key, {
-          tm: tmById.get(bestId)!,
-          method: 'player_overlap',
-          evidence: `${count}/${total} matched players`,
-        });
-        claimedTm.add(bestId);
-        continue;
-      }
-    }
+  // Pass 1: a unique exact name (or configured alias) match.
+  const nameTarget = (name: string) => {
     const n = normalizeClubName(name);
     const alias = aliases.get(n);
-    const options = (tmByName.get(alias ?? n) ?? []).filter((c) => !claimedTm.has(c.sourceId));
-    if (options.length === 1) {
+    return { alias, options: tmByName.get(alias ?? n) ?? [] };
+  };
+  const nameClaims = new Map<string, number>();
+  for (const name of eaNames.values())
+    for (const c of nameTarget(name).options)
+      nameClaims.set(c.sourceId, (nameClaims.get(c.sourceId) ?? 0) + 1);
+  for (const [key, name] of eaNames) {
+    const { alias, options } = nameTarget(name);
+    if (options.length === 1 && nameClaims.get(options[0]!.sourceId) === 1) {
       byEaClub.set(key, {
         tm: options[0]!,
         method: alias ? 'alias' : 'exact_name',
         evidence: name,
       });
       claimedTm.add(options[0]!.sourceId);
-    } else {
-      unmatched.push(name);
     }
   }
+  // Pass 2: where matched players actually play. Needs enough of the squad to be matched, so a
+  // few players who moved on between snapshots can't drag a whole club to their new club.
+  for (const [key] of eaNames) {
+    if (byEaClub.has(key)) continue;
+    const t = tally.get(key);
+    if (t) {
+      const total = [...t.values()].reduce((a, b) => a + b, 0);
+      const ranked = [...t.entries()].sort((a, b) => b[1] - a[1]);
+      const [bestId, count] = ranked[0]!;
+      const runnerUp = ranked[1]?.[1] ?? 0;
+      const coverage = count / (squadSize.get(key) ?? count);
+      // Snapshots can be seasons apart, so many players have moved on: ask for a clear plurality
+      // (twice the next club) rather than a majority.
+      if (count >= 3 && count >= 2 * runnerUp && coverage >= 0.25 && !claimedTm.has(bestId)) {
+        byEaClub.set(key, {
+          tm: tmById.get(bestId)!,
+          method: 'player_overlap',
+          evidence: `${count}/${total} matched players`,
+        });
+        claimedTm.add(bestId);
+      }
+    }
+  }
+  // Pass 3: every word of one name appears in the other's name or URL slug ("Benfica" ↔
+  // "SL Benfica", "Inter Miami" ↔ inter-miami-cf), unique both ways, and at least one matched
+  // player of the club plays there now (guards against same-named clubs in other countries).
+  const words = (s: string) => new Set(normalizeClubName(s.replace(/-/g, ' ')).split(' '));
+  const within = (a: Set<string>, b: Set<string>) => [...a].every((w) => b.has(w));
+  const open = tmClubs
+    .filter((c) => !claimedTm.has(c.sourceId))
+    .map((c) => ({ c, names: [words(c.name), ...(c.code ? [words(c.code)] : [])] }));
+  const proposals = new Map<string, TmClub[]>();
+  const claims = new Map<string, number>();
+  for (const [key, name] of eaNames) {
+    if (byEaClub.has(key)) continue;
+    const w = words(name);
+    const options = open
+      .filter(({ names }) => names.some((n) => within(w, n) || within(n, w)))
+      .map((o) => o.c);
+    if (!options.length) continue;
+    proposals.set(key, options);
+    for (const c of options) claims.set(c.sourceId, (claims.get(c.sourceId) ?? 0) + 1);
+  }
+  for (const [key, options] of proposals) {
+    const c = options[0]!;
+    if (
+      options.length === 1 &&
+      claims.get(c.sourceId) === 1 &&
+      (tally.get(key)?.get(c.sourceId) ?? 0) >= 1
+    ) {
+      byEaClub.set(key, {
+        tm: c,
+        method: 'name_tokens',
+        evidence: `${eaNames.get(key)} ↔ ${c.name}`,
+      });
+      claimedTm.add(c.sourceId);
+    }
+  }
+  const unmatched = [...eaNames].filter(([key]) => !byEaClub.has(key)).map(([, name]) => name);
   return { byEaClub, unmatched };
 }

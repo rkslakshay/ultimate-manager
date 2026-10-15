@@ -109,3 +109,119 @@ describe('column resolution', () => {
     expect(detectTable('notes.csv', ['foo', 'bar'])).toBeNull();
   });
 });
+
+describe('table detection on the real datasets’ headers (column names only)', () => {
+  const EA_HEADER = [
+    'player_id',
+    'player_url',
+    'fifa_version',
+    'fifa_update',
+    'short_name',
+    'long_name',
+    'player_positions',
+    'overall',
+    'potential',
+    'value_eur',
+    'wage_eur',
+    'dob',
+    'club_team_id',
+    'club_name',
+    'league_name',
+    'league_level',
+  ];
+  it('reads the men’s ratings table and keeps women’s tables out of the world', () => {
+    expect(detectTable('male_players.csv', EA_HEADER)).toBe('eaPlayers');
+    expect(detectTable('female_players.csv', EA_HEADER)).toBeNull();
+    expect(detectTable('players_womens.csv', EA_HEADER)).toBeNull();
+    expect(
+      detectTable('male_teams.csv', ['team_id', 'team_name', 'league_id', 'overall']),
+    ).toBeNull();
+  });
+
+  it('recognises Transfermarkt-style tables by name, not by shared id/name columns', () => {
+    expect(
+      detectTable('players.csv', [
+        'player_id',
+        'first_name',
+        'last_name',
+        'name',
+        'date_of_birth',
+        'market_value_in_eur',
+      ]),
+    ).toBe('tmPlayers');
+    expect(
+      detectTable('clubs.csv', [
+        'club_id',
+        'club_code',
+        'name',
+        'domestic_competition_id',
+        'stadium_name',
+        'stadium_seats',
+      ]),
+    ).toBe('tmClubs');
+    expect(
+      detectTable('competitions.csv', [
+        'competition_id',
+        'competition_code',
+        'name',
+        'sub_type',
+        'type',
+        'country_name',
+      ]),
+    ).toBe('tmCompetitions');
+    expect(
+      detectTable('transfers.csv', [
+        'player_id',
+        'transfer_date',
+        'transfer_season',
+        'from_club_id',
+        'to_club_id',
+        'transfer_fee',
+      ]),
+    ).toBe('tmTransfers');
+    expect(
+      detectTable('player_valuations.csv', [
+        'player_id',
+        'date',
+        'market_value_in_eur',
+        'current_club_id',
+      ]),
+    ).toBe('tmValuations');
+    // Match logs share player_id / club_id / name columns but are NOT players or clubs.
+    expect(
+      detectTable('appearances.csv', [
+        'appearance_id',
+        'game_id',
+        'player_id',
+        'player_club_id',
+        'date',
+        'player_name',
+        'minutes_played',
+      ]),
+    ).toBeNull();
+    expect(
+      detectTable('game_lineups.csv', [
+        'game_lineups_id',
+        'date',
+        'game_id',
+        'player_id',
+        'club_id',
+        'player_name',
+        'type',
+        'position',
+      ]),
+    ).toBeNull();
+    expect(
+      detectTable('game_events.csv', [
+        'game_event_id',
+        'date',
+        'game_id',
+        'minute',
+        'type',
+        'club_id',
+        'club_name',
+        'player_id',
+      ]),
+    ).toBeNull();
+  });
+});
