@@ -25,7 +25,9 @@ Applied in order; a level only accepts pairs that are unique on **both** sides:
 1. Manual approvals (`config.identity.approve`)
 2. Exact normalised full name + birth date
 3. Exact normalised display name + birth date
-4. Surname + birth date + nationality
+4. Name tokens + birth date: same first name and every word of the shorter name appears in
+   order in the longer one ("Kylian Mbappé" ↔ "Kylian Mbappé Lottin")
+5. Surname + birth date + nationality
 
 Normalisation removes accents, case and punctuation; original names are kept for display.
 Several candidates at a level → **ambiguous**, nothing merged. Same birth date and
@@ -33,9 +35,22 @@ Jaro-Winkler similarity ≥ 0.85 but not equal → **fuzzy candidate**, reported
 Pairs in `config.identity.reject` are never matched. Players without a birth date can't be
 matched. Matched pairs whose nationality or height disagree are kept and reported.
 
-Clubs: by **player overlap** (≥ 3 matched players and ≥ 60 % of a club's matched players
-point to the same club), then exact normalised name (ignoring FC/CF/AFC/…) or a configured
-alias. Canonical ids persist in `processed/<pack>/identity-map.json`.
+Clubs, in three passes, each one-to-one:
+
+1. Exact normalised name (ignoring FC/CF/AFC/…), the Transfermarkt-style URL slug
+   (`inter-miami-cf`) or a configured alias, when unique on both sides.
+2. **Player overlap**: where the club's matched players play now: ≥ 3 players, at least twice as
+   many as at any other club, and ≥ 25 % of the squad (so a few players who moved on between
+   snapshots can't drag a club to their new club).
+3. Name tokens: every word of one name is in the other's name or slug ("Benfica" ↔ "SL
+   Benfica"), unique both ways, and at least one matched player of the club plays there now.
+
+**Current club** (`primaryClubSource`, default `"tm"`): the Transfermarkt-style current club is
+used when the player appeared in that source in the career-start season (`last_season`) and
+the club is in the pack. If he is active this season at a club that isn't in the pack (and his
+old club is identified), or his old club's squad was tracked this season without him
+(retired/moved to an uncovered league), he is not placed in the world. Otherwise the ratings
+club is kept. All three cases are counted in the report (`tm.*` counters). Canonical ids persist in `processed/<pack>/identity-map.json`.
 
 ## Leagues, nations, clubs
 

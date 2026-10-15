@@ -27,7 +27,19 @@ was read.
 
 ### Real pack
 
-**Not built: no real dataset has been provided** (see `docs/DATA_SOURCES.md`).
+Built locally from the user's files (version `v3e667f52a6e5`, ~8 s): 157 nations, 35 leagues,
+613 clubs, 13,819 imported + 939 generated players, 58,166 historical transfers, 162,985
+valuations; career start 2025-07-01. Full report: `data-packs/reports/latest-real.md` (local).
+
+- Player matching: 12,059 ratings players matched to Transfermarkt-style records (full name
+  6,915 · display name 1,304 · name tokens 3,255 · surname 585); 5 ambiguous, not merged.
+- Club matching: exact name 289 · player overlap 114 · name tokens 30 · unmatched 239 (mostly
+  clubs the Transfermarkt-style source doesn't cover: Brazil, Argentina, MLS, China…).
+- Squad sizes 20-33 (median 24) after removing players who left their 2023 club.
+- Calibration: CA tracks source overall with r = 0.854; value model R² (log) 0.703.
+- Known: nationality spelling conflicts are reported, not resolved (Turkey/Türkiye,
+  Bosnia and Herzegovina/Bosnia-Herzegovina); league membership follows the 2023 ratings
+  file; five leagues have a derived country (set `leagues[...].nation` in the config).
 
 ### Sample pack (fictional fixture, committed)
 

@@ -17,13 +17,20 @@ Plan for all phases: [docs/ROADMAP.md](docs/ROADMAP.md). Reasoning: [DECISIONS.m
 
 ## Phase 1.5 — Real-world data packs ✅
 
-### Blocker
+### Real pack (local, from the user's files)
 
-**No dataset files have been provided** (`data-packs/raw/` doesn't exist in your checkout yet).
-The whole pipeline is built and tested on a committed _fictional_ fixture dataset; nothing real
-has been imported or written from memory. Put files as described in
-[data-packs/README.md](data-packs/README.md), run `npm run data:inspect`, then
-`npm run data:import -- --pack real`.
+The user's datasets are in `data-packs/raw/` (gitignored). `npm run data:import -- --pack real`
+builds 35 leagues, 613 clubs, 13,819 imported + 939 generated players (start 2025-07-01) in ~8 s,
+and the pack appears in the New career dialog. First debugging pass (2026-10-15):
+
+- Fixed: women's players, coaches/teams and match-log tables were picked up as ratings or
+  Transfermarkt tables. Detection now goes by file name and skips unused files without
+  reading them. Only the newest game version's rows are used, and hashing is streamed.
+- Fixed: famous players with long legal names didn't match (new name-token level).
+- Fixed: clubs came from the 2023 ratings file while the start date is 2025. They now come
+  from the newer source, guarded by `last_season` (D-031). Club matching checks
+  names/slugs first and no longer pairs the wrong clubs (Derry City ↔ Dundee FC). Squads that
+  had grown to 70+ are now 20-33.
 
 ### Done
 
@@ -63,8 +70,14 @@ has been imported or written from memory. Put files as described in
 
 ### Known issues / simplifications
 
-- Real-data integration is **unverified against real files** (none provided). Column aliases
-  were written for the expected dataset shapes; `data:inspect` will show any mismatch.
+- Real pack: league membership still follows the 2023 ratings file (promotions/relegations
+  since then are missing); nationality spellings differ between sources (reported only);
+  239 clubs, mostly outside Europe, have no Transfermarkt-style match, so their players keep
+  2023 clubs and contracts. A newer ratings file would remove most of this.
+- Real pack 20-season development sim: 8/9 checks pass; **elite players (CA ≥ 160) grow from
+  15 to 168** as regens replace imported players (seasons 7-16). Youth intake quality anchored
+  to squad level likely over-produces stars at real super-clubs. TODO(phase-3): tune before
+  the season loop uses it.
 - Progression isn't driven by game time yet: the season loop (Phase 3) will call it. Until
   then the development simulator uses synthetic playing time and the profile's Development
   section is empty.

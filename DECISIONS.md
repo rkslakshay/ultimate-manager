@@ -223,3 +223,14 @@ with season 5: imported worlds first settle (thin real squads fill up, the ficti
 generator's slightly strong squads relax ~6 %). Youth intake quality is anchored to each
 club's squad level, so any pack's ability scale stays stable. Released unattached players
 drift out of the game to keep the population bounded.
+
+### D-031 Current club comes from the newer source, guarded by activity evidence
+
+The user's ratings file (2023) and Transfermarkt-style file (2026, start 2025-07-01) are two
+seasons apart. Placing players by the ratings club put Mbappé at PSG and Kroos at Real Madrid
+in 2025. `primaryClubSource` now defaults to `"tm"`, but only for players active in the
+start season (`last_season`); players active elsewhere outside the pack, or missing from their
+old club's tracked squad, are left out rather than kept at a stale club (which also bloated
+squads to 70+). Club matching checks exact names (incl. URL slugs) before player overlap, and
+overlap needs a clear plurality covering a quarter of the squad, because a small group of
+movers had paired "Derry City" with "Dundee FC".
