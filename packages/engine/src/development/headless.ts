@@ -113,6 +113,7 @@ export function simulateSeasons(
     clubs: start.clubs.map((c) => ({ ...c })),
   };
   const regenIds = new Set<number>();
+  const paCeiling = start.players.reduce((m, p) => (p.retired ? m : Math.max(m, p.pa)), 0) || 200;
   const stats: SeasonStats[] = [];
   let nextId = world.players.reduce((m, p) => Math.max(m, p.id), 0);
   const newId = () => ++nextId;
@@ -230,6 +231,7 @@ export function simulateSeasons(
         ? {
             median: squadCas[Math.floor(squadCas.length / 2)]!,
             p75: squadCas[Math.floor(squadCas.length * 0.75)]!,
+            paCeiling,
           }
         : undefined;
       const intake = youthIntake(
@@ -352,6 +354,9 @@ export interface StabilityCheck {
 /** Seasons treated as burn-in: an imported world adjusts to the simulation's rules first. */
 export const BURN_IN_SEASONS = 4;
 
+/** Smallest post-burn-in elite count (CA ≥ 160) for which the elite ratio check is meaningful. */
+export const ELITE_MIN_BASELINE = 10;
+
 /**
  * Documented stability thresholds over a long run, comparing the last season with the first
  * season after burn-in (season 5), so one-off adjustments of an imported world (e.g. thin real
@@ -388,13 +393,23 @@ export function checkStability(stats: SeasonStats[]): StabilityCheck[] {
       1.1,
       `${first.ca.p90} → ${last.ca.p90}`,
     ),
-    within(
-      'elite players ratio',
-      ratio(last.elite, Math.max(1, first.elite)),
-      first.elite ? 0.4 : 0,
-      first.elite ? 2.5 : 1e9,
-      `${first.elite} → ${last.elite}`,
-    ),
+    // A ratio of single-digit counts is noise (e.g. a small world's few stars all ageing out at
+    // once), so below ELITE_MIN_BASELINE only runaway growth past the baseline is checked.
+    first.elite >= ELITE_MIN_BASELINE
+      ? within(
+          'elite players ratio',
+          ratio(last.elite, first.elite),
+          0.4,
+          2.5,
+          `${first.elite} → ${last.elite}`,
+        )
+      : within(
+          'elite players ratio',
+          last.elite,
+          0,
+          ELITE_MIN_BASELINE * 2.5,
+          `${first.elite} → ${last.elite}, baseline under ${ELITE_MIN_BASELINE}: count checked`,
+        ),
     within(
       'active population ratio',
       ratio(last.activePlayers, first.activePlayers),

@@ -36,6 +36,13 @@ export function retirementChance(player: Player, today: DayNumber): number {
   return chance;
 }
 
+/**
+ * Academy PA = squad p75 + share × (world PA ceiling − p75), share ~ normal(mean + 0.004 ×
+ * youth facilities, sd). Tuned with the 20-season development sim (DECISIONS.md, regen potential).
+ */
+export const PA_SHARE_MEAN = 0.12;
+export const PA_SHARE_SD = 0.22;
+
 const INTAKE_POSITIONS: Position[] = [
   'GK',
   'DC',
@@ -63,6 +70,8 @@ export interface SquadLevel {
   /** Median and upper-quartile CA of the club's current squad. */
   median: number;
   p75: number;
+  /** Highest PA in the world when the save started (defaults to 200, the scale maximum). */
+  paCeiling?: number;
 }
 
 export function youthIntake(
@@ -96,10 +105,16 @@ export function youthIntake(
     });
     // Academy potential spans journeymen to future stars and scales with club quality and
     // facilities (the generic generator's age-based headroom is far too low for 15-17s).
-    const paMean = level
-      ? level.p75 + club.youthFacilities * 0.8 - 6
-      : 68 + club.reputation * 0.75 + club.youthFacilities * 1.6;
-    p.pa = clamp(Math.round(rng.normal(paMean, 24)), p.ca + 10, 200);
+    // With a known squad level, potential is a share of the headroom between the squad's p75
+    // and the world's PA ceiling, so the spread narrows at clubs that are already elite (as for
+    // imported under-21s) and a world never breeds stars beyond its own scale. A fixed spread
+    // let elite academies feed their own p75 and ratchet upwards (DECISIONS.md, regen potential).
+    const paRaw = level
+      ? level.p75 +
+        Math.max(0, (level.paCeiling ?? 200) - level.p75) *
+          rng.normal(PA_SHARE_MEAN + club.youthFacilities * 0.004, PA_SHARE_SD)
+      : rng.normal(68 + club.reputation * 0.75 + club.youthFacilities * 1.6, 24);
+    p.pa = clamp(Math.round(paRaw), p.ca + 10, 200);
     const endDay = seasonEndDay(today, rng.int(2, 3));
     p.clubId = club.id;
     p.contract = {
