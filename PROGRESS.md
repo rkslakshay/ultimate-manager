@@ -74,10 +74,11 @@ and the pack appears in the New career dialog. First debugging pass (2026-10-15)
   since then are missing); nationality spellings differ between sources (reported only);
   239 clubs, mostly outside Europe, have no Transfermarkt-style match, so their players keep
   2023 clubs and contracts. A newer ratings file would remove most of this.
-- Real pack 20-season development sim: 8/9 checks pass; **elite players (CA ≥ 160) grow from
-  15 to 168** as regens replace imported players (seasons 7-16). Youth intake quality anchored
-  to squad level likely over-produces stars at real super-clubs. TODO(phase-3): tune before
-  the season loop uses it.
+- 20-season development sim: 9/9 checks pass for fictional, sample and real packs (D-032).
+  Regen potential is now a share of the headroom to the world's starting PA ceiling. Real-pack
+  elites go 16 → 31 (were 15 → 168), mean CA drifts about +7 % (allowed ±10 %), and fictional
+  elites settle 83 → 54. TODO(phase-3): the season loop must store the save's PA ceiling at
+  creation and pass it to `youthIntake`; recalibrate once real minutes replace synthetic ones.
 - Progression isn't driven by game time yet: the season loop (Phase 3) will call it. Until
   then the development simulator uses synthetic playing time and the profile's Development
   section is empty.

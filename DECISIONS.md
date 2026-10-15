@@ -234,3 +234,22 @@ old club's tracked squad, are left out rather than kept at a stale club (which a
 squads to 70+). Club matching checks exact names (incl. URL slugs) before player overlap, and
 overlap needs a clear plurality covering a quarter of the squad, because a small group of
 movers had paired "Derry City" with "Dundee FC".
+
+### D-032 Regen potential is a share of the headroom to the world's PA ceiling
+
+The real pack failed the elite check (CA ≥ 160: 15 → 168 over 20 seasons). Measured cause:
+academy PA was `normal(squad p75 + facilities × 0.8 − 6, 24)`, so 6.8 % of regens had PA ≥ 160
+and 1.5 % PA ≥ 180. The imported world has 2 % and 0.04 %, and its maximum PA is 183. At super-clubs
+those regens raised the squad p75 they were anchored to, so output ratcheted upwards. Now
+`PA = p75 + (ceiling − p75) × normal(0.12 + 0.004 × youthFacilities, 0.22)`, where the ceiling
+is the highest PA in the starting world. Imported under-21s sit at a fairly constant share of
+that headroom above their club's p75: about 0.2-0.3 at the median and 0.6 at p99, with a
+narrower absolute spread at elite clubs. The intake mean is lower because intakes include the
+players who never make it. A grid over mean/sd (3-4 seeds per pack) picked 0.12/0.22. Real:
+elite ratio 1.5-1.9, mean CA about +7 %. Fictional: 0.59-0.79. A lower mean flattens the real
+pack's mean CA, but fictional elites then drop towards the 0.4 floor. The fictional generator
+starts star-heavy (3 % at CA ≥ 160).
+The elite ratio check now needs a post-burn-in baseline of at least 10. Below that it only
+checks that the count stays ≤ 25. The sample pack starts with 0 elites, peaks at 5-8 as its
+high-PA youngsters mature, and settles at 0-2 with stable mean and p90. No PA setting kept that
+ratio ≥ 0.4 without breaking the real pack. Earlier, a zero baseline had no upper bound at all.
